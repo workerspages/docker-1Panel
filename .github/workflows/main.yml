@@ -1,4 +1,4 @@
-name: Build and Push 1Panel Images
+name: build_1panel_images
 
 "on":
   push:
@@ -6,12 +6,13 @@ name: Build and Push 1Panel Images
   workflow_dispatch: {}
 
 jobs:
-  build_1pnal_images:
+  build_1panel_cn_images:
     runs-on: ubuntu-latest
     strategy:
+      max-parallel: 1 # Restrict to serial execution.
       fail-fast: false
       matrix:
-        onepanel_type: [pro, cn]
+        onepanel_type: [cn]
         os: [ubuntu, centos, alpine]
         version:
           - "2.0.0"
@@ -46,12 +47,12 @@ jobs:
           mkdir -p .docker-tmp
           cp "${{ matrix.os }}/Dockerfile" .docker-tmp/Dockerfile
           sed -i 's/{%OnePanel_Version%}/${{ matrix.version }}/g' .docker-tmp/Dockerfile
-          if [ "${{ matrix.onepanel_type }}" == "cn" ]; then
+          if [ "${{ matrix.onepanel_type }}" = "cn" ]; then
             HACK_DIR="hack_cn"
           else
             HACK_DIR="hack"
           fi
-          sed -i 's/{%OnePanel_Type%}/${HACK_DIR}/g' .docker-tmp/Dockerfile
+          sed -i "s|{%OnePanel_Type%}|${HACK_DIR}|g" .docker-tmp/Dockerfile
 
       - name: Build and Push (multi-arch)
         run: |
@@ -62,4 +63,56 @@ jobs:
             -t "$IMAGE" \
             --push \
             .
-        
+
+  build_1panel_pro_images:
+    # just disable job
+    if: false
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 1 # Restrict to serial execution.
+      fail-fast: false
+      matrix:
+        onepanel_type: [pro]
+        os: [ubuntu, centos, alpine]
+        version:
+          #- "2.0.0"
+          - "1.8.5"
+          - "1.9.6"
+          - "1.10.32-lts"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Prepare Dockerfile with version
+        run: |
+          mkdir -p .docker-tmp
+          cp "${{ matrix.os }}/Dockerfile" .docker-tmp/Dockerfile
+          sed -i 's/{%OnePanel_Version%}/${{ matrix.version }}/g' .docker-tmp/Dockerfile
+          if [ "${{ matrix.onepanel_type }}" = "cn" ]; then
+            HACK_DIR="hack_cn"
+          else
+            HACK_DIR="hack"
+          fi
+          sed -i "s|{%OnePanel_Type%}|${HACK_DIR}|g" .docker-tmp/Dockerfile
+
+      - name: Build and Push (multi-arch)
+        run: |
+          IMAGE=${{ vars.DOCKERHUB_USERNAME }}/${{ vars.DOCKERHUB_REPO }}:dood-${{ matrix.version }}-${{ matrix.os }}${{ matrix.onepanel_type == 'cn' && '-cn' || '' }}
+          docker buildx build \
+            --platform linux/amd64,linux/arm64 \
+            -f .docker-tmp/Dockerfile \
+            -t "$IMAGE" \
+            --push \
+            .
