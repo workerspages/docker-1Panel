@@ -30,7 +30,7 @@
   - [supervisord 说明](#supervisord-说明)
   - [DooD说明](#DooD说明)
   - [为什么选择DooD](#为什么选择DooD)
-  - [DooD vs DinD vs sysbox对比](#DooD vs DinD vs sysbox对比)
+  - [DooD vs DinD vs Sysbox对比](#DooD-vs-DinD-vs-Sysbox对比)
 - [构建说明](#构建说明)
   - [本地构建（Makefile）](#本地构建makefile)
   - [GitHub Actions 构建](#github-actions-构建)
@@ -338,7 +338,7 @@ volumes:
 
 在当前条件下选用 DooD + supervisord，明确拒绝在生产环境用 --privileged 跑 systemd。
 
-### DooD vs DinD vs sysbox对比
+### DooD vs DinD vs Sysbox对比
 
 | 特性维度     | **DooD (Docker-out-of-Docker)**                              | **DinD (Docker-in-Docker)**                                  | **Sysbox**                                                   |
 | ------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
