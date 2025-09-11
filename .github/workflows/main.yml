@@ -9,7 +9,7 @@ jobs:
   build_1panel_cn_images:
     runs-on: ubuntu-latest
     strategy:
-      max-parallel: 1 # Restrict to serial execution.
+      max-parallel: 6 # Restrict to serial execution.
       fail-fast: false
       matrix:
         onepanel_type: [cn]
