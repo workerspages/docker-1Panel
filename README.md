@@ -7,7 +7,7 @@
 
 This repository builds and publishes Docker images for 1Panel using the DooD (Docker-out-of-Docker) design. It reuses the host Docker engine and uses supervisord to manage 1Panel processes, avoiding running systemd in containers or using --privileged.
 
-- Multi-version support: 2.0.0 ~ 2.0.10 (injected by placeholder replacement)
+- Multi-version support: 2.0.0 ~ 2.0.11 (injected by placeholder replacement)
 - Multiple OS: ubuntu, centos, alpine
 - Multi-arch: amd64, arm64 (buildx + QEMU)
 - Image naming: caijiamx/1panel:dood-{version}-{os}
@@ -50,17 +50,17 @@ Note: This solution targets trusted, single-tenant environments. For production,
   ```
   RUN bash /1panel/quick_start.sh v{%OnePanel_Version%}
   ```
-  During build, sed replaces {%OnePanel_Version%} with a concrete version (2.0.0~2.0.10).
+  During build, sed replaces {%OnePanel_Version%} with a concrete version (2.0.0~2.0.11).
 - Multi-arch: buildx + QEMU produce linux/amd64 and linux/arm64 images; scripts auto-detect archive arch and download the correct package.
 
 ### Supported OS and Tag Convention
 
 - OS: ubuntu, centos, alpine
-- Versions: 2.0.0 ~ 2.0.10
+- Versions: 2.0.0 ~ 2.0.11
 - Architectures: amd64, arm64 (auto-match download)
 - Tag format:
   - caijiamx/1panel:dood-{version}-{os}
-  - Example: caijiamx/1panel:dood-2.0.10-ubuntu
+  - Example: caijiamx/1panel:dood-2.0.11-ubuntu
 
 ### Quick Start
 
@@ -73,7 +73,7 @@ docker run -d --name 1panel --restart unless-stopped \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v /var/lib/docker/volumes:/var/lib/docker/volumes \
   -v /1panel_app/data/:/opt/ \
-  caijiamx/1panel:dood-2.0.10-ubuntu
+  caijiamx/1panel:dood-2.0.11-ubuntu
 ```
 
 Initialization (inside container):
@@ -104,7 +104,7 @@ An example docker-compose.yml is provided (with required DooD mounts):
 ```yaml
 services:
   one_panel:
-    image: caijiamx/1panel:dood-2.0.10-ubuntu
+    image: caijiamx/1panel:dood-2.0.11-ubuntu
     container_name: 1panel
     restart: unless-stopped
     ports:
@@ -117,7 +117,7 @@ services:
 
 Key fields in docker-compose.yml:
 
-- image: e.g., caijiamx/1panel:dood-2.0.10-ubuntu
+- image: e.g., caijiamx/1panel:dood-2.0.11-ubuntu
 - ports: external port mapping, e.g., 8888:8888
 - volumes (required for DooD):
   - /var/run/docker.sock:/var/run/docker.sock
@@ -143,14 +143,14 @@ Notes:
 
 ```bash
 # Ubuntu
-docker pull caijiamx/1panel:dood-2.0.10-ubuntu
+docker pull caijiamx/1panel:dood-2.0.11-ubuntu
 # CentOS
-docker pull caijiamx/1panel:dood-2.0.10-centos
+docker pull caijiamx/1panel:dood-2.0.11-centos
 # Alpine
-docker pull caijiamx/1panel:dood-2.0.10-alpine
+docker pull caijiamx/1panel:dood-2.0.11-alpine
 ```
 
-Replace {version} with 2.0.0~2.0.10 and {os} with ubuntu/centos/alpine.
+Replace {version} with 2.0.0~2.0.11 and {os} with ubuntu/centos/alpine.
 
 ### Directory Layout
 
@@ -355,16 +355,16 @@ make help
 
 Common commands:
 - Initialize builder (once): make builder
-- Build single image (no push): make build OS=ubuntu VERSION=2.0.10 ONEPANEL_TYPE=cn
+- Build single image (no push): make build OS=ubuntu VERSION=2.0.11 ONEPANEL_TYPE=cn
 - Push single image: make push OS=centos VERSION=2.0.0 ONEPANEL_TYPE=cn
-- Local debug (load to local): make load OS=ubuntu VERSION=2.0.10
+- Local debug (load to local): make load OS=ubuntu VERSION=2.0.11
 - Multi-arch build (no push): make buildx OS=centos VERSION=2.0.0
-- Multi-arch build and push: make push OS=alpine VERSION=2.0.10
-- Matrix push (3 OS × 2.0.0~2.0.10): make matrix-push
+- Multi-arch build and push: make push OS=alpine VERSION=2.0.11
+- Matrix push (3 OS × 2.0.0~2.0.11): make matrix-push
 
 Variables:
 - OS=ubuntu|centos|alpine
-- VERSION=2.0.0~2.0.10 (inject into {%OnePanel_Version%})
+- VERSION=2.0.0~2.0.11 (inject into {%OnePanel_Version%})
 - ONEPANEL_TYPE=pro|cn (inject into {%OnePanel_Type%})
 - PLATFORMS=linux/amd64,linux/arm64 (can set single)
 - IMAGE_REPO=caijiamx/1panel, IMAGE_TAG_PREFIX=dood
@@ -373,10 +373,10 @@ Examples
 
 ```bash
 # Dry-run a target
-make -n build OS=ubuntu VERSION=2.0.10 ONEPANEL_TYPE=pro
+make -n build OS=ubuntu VERSION=2.0.11 ONEPANEL_TYPE=pro
 
 # Build a single image
-make build OS=ubuntu VERSION=2.0.10 ONEPANEL_TYPE=pro
+make build OS=ubuntu VERSION=2.0.11 ONEPANEL_TYPE=pro
 ```
 
 Tag convention: caijiamx/1panel:dood-{version}-{os}
@@ -386,7 +386,7 @@ Tag convention: caijiamx/1panel:dood-{version}-{os}
 Workflow: .github/workflows/main.yml (“Build and Push 1Panel Images”)
 
 - Triggers: push to main/dev or manual workflow_dispatch
-- Matrix: OS=[ubuntu, centos, alpine]; VERSION=[2.0.0..2.0.10]
+- Matrix: OS=[ubuntu, centos, alpine]; VERSION=[2.0.0..2.0.11]
 - Multi-arch: linux/amd64, linux/arm64 (setup-qemu + buildx)
 - Version replacement: sed replaces v{%OnePanel_Version%} in Dockerfile before build
 - Push target: caijiamx/1panel:dood-{version}-{os}
@@ -397,7 +397,7 @@ Workflow: .github/workflows/main.yml (“Build and Push 1Panel Images”)
 
 ## Upgrade Guide
 
-Upgrade example from v2.0.0 -> v2.0.10. Preparations:
+Upgrade example from v2.0.0 -> v2.0.11. Preparations:
 
 1. Backup the original image (e.g., v2.0.0)
 2. Backup mounted data
@@ -405,7 +405,7 @@ Upgrade example from v2.0.0 -> v2.0.10. Preparations:
 
 ### Version Upgrade Steps
 
-1. Build/pull the new image (e.g., 2.0.10)
+1. Build/pull the new image (e.g., 2.0.11)
 2. Manually update the version number
 3. Start the new service
 
@@ -417,8 +417,8 @@ Official installs maintain version automatically; this image requires manually s
 sudo apt-get update && apt-get install -y sqlite3
 cp /opt/1panel/db/core.db  /opt/1panel/db/core.db.bak
 cp /opt/1panel/db/agent.db /opt/1panel/db/agent.db.bak
-sqlite3 /opt/1panel/db/core.db "UPDATE settings SET value='v2.0.10' WHERE key='SystemVersion';"
-sqlite3 /opt/1panel/db/agent.db "UPDATE settings SET value='v2.0.10' WHERE key='SystemVersion';"
+sqlite3 /opt/1panel/db/core.db "UPDATE settings SET value='v2.0.11' WHERE key='SystemVersion';"
+sqlite3 /opt/1panel/db/agent.db "UPDATE settings SET value='v2.0.11' WHERE key='SystemVersion';"
 ```
 
 After updating image, restart the container (preserve /opt/ volume).
@@ -428,11 +428,13 @@ After updating image, restart the container (preserve /opt/ volume).
 ### Service & Feature Limitations
 
 1. Panel -> bottom-right update -> “Upgrade Now” is unavailable. Official upgrade logic depends on systemctl.
-2. Panel -> container features unavailable. Service liveness check depends on systemctl status; will be optimized to remove dependency.
+2. ~~Panel -> container features unavailable. Service liveness check depends on systemctl status; will be optimized to remove dependency.~~
 3. nginx_status listens on 127.0.0.1 by default; adjust accordingly. See: OpenResty status error.
 4. Some app install mount paths may be incorrect; fix per actual paths.
 5. 1panel-core & 1panel-agent run as root. Running under user nobody will make 1panel-agent crash.
 6. Toolbox -> Process Guard, FTP, Fail2ban unavailable.
+7. Version v2.0.11 improves the Docker service decision logic, and the Panel->Container function is basically available (the full functionality has not been fully tested).
+8. Version v2.0.11 adds disk management, which is not recommended.
 
 ### Q&A
 

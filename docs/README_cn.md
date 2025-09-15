@@ -7,7 +7,7 @@
 
 本仓库用于构建并发布 1Panel 的 Docker 镜像，采用 DooD（Docker-out-of-Docker）设计，复用宿主机 Docker 引擎，使用 supervisord 管理 1Panel 进程，避免在容器内运行 systemd 或使用 --privileged。
 
-- 支持多版本：2.0.0 ~ 2.0.10（通过变量替换注入）
+- 支持多版本：2.0.0 ~ 2.0.11（通过变量替换注入）
 - 支持多系统：ubuntu、centos、alpine
 - 支持多架构：amd64、arm64（buildx + QEMU）
 - 镜像命名：caijiamx/1panel:dood-{version}-{os}-cn
@@ -50,17 +50,17 @@
   ```
   RUN bash /1panel/quick_start.sh v{%OnePanel_Version%}
   ```
-  构建时以 sed 将 {%OnePanel_Version%} 替换为具体版本（2.0.0~2.0.10）。
+  构建时以 sed 将 {%OnePanel_Version%} 替换为具体版本（2.0.0~2.0.11）。
 - 多架构：buildx + QEMU 生成 linux/amd64、linux/arm64 镜像；脚本会自动识别归档架构并下载对应包。
 
 ### 支持系统与命名规范
 
 - 系统：ubuntu、centos、alpine
-- 版本：2.0.0 ~ 2.0.10
+- 版本：2.0.0 ~ 2.0.11
 - 架构：amd64、arm64（自动匹配下载包）
 - 标签规范：
   - caijiamx/1panel:dood-{version}-{os}-cn
-  - 例：caijiamx/1panel:dood-2.0.10-ubuntu-cn
+  - 例：caijiamx/1panel:dood-2.0.11-ubuntu-cn
 
 ### 快速开始
 
@@ -73,7 +73,7 @@ docker run -d --name 1panel --restart unless-stopped \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v /var/lib/docker/volumes:/var/lib/docker/volumes \
   -v /1panel_app/data/:/opt/ \
-  caijiamx/1panel:dood-2.0.10-ubuntu-cn
+  caijiamx/1panel:dood-2.0.11-ubuntu-cn
 ```
 
 初始化（容器内）：
@@ -103,7 +103,7 @@ docker exec -it 1panel bash
 ```yaml
 services:
   one_panel:
-    image: caijiamx/1panel:dood-2.0.10-ubuntu-cn
+    image: caijiamx/1panel:dood-2.0.11-ubuntu-cn
     container_name: 1panel
     restart: unless-stopped
     ports:
@@ -116,7 +116,7 @@ services:
 
 docker-compose.yml关键字段：
 
-- image：镜像标签如 caijiamx/1panel:dood-2.0.10-ubuntu-cn
+- image：镜像标签如 caijiamx/1panel:dood-2.0.11-ubuntu-cn
 - ports：对外端口映射，示例 8888:8888
 - volumes（DooD 必要挂载）：
   - /var/run/docker.sock:/var/run/docker.sock
@@ -142,14 +142,14 @@ docker compose up -d
 
 ```bash
 # Ubuntu
-docker pull caijiamx/1panel:dood-2.0.10-ubuntu-cn
+docker pull caijiamx/1panel:dood-2.0.11-ubuntu-cn
 # CentOS
-docker pull caijiamx/1panel:dood-2.0.10-centos-cn
+docker pull caijiamx/1panel:dood-2.0.11-centos-cn
 # Alpine
-docker pull caijiamx/1panel:dood-2.0.10-alpine-cn
+docker pull caijiamx/1panel:dood-2.0.11-alpine-cn
 ```
 
-将 {version} 替换为 2.0.0~2.0.10，{os} 替换为 ubuntu/centos/alpine。
+将 {version} 替换为 2.0.0~2.0.11，{os} 替换为 ubuntu/centos/alpine。
 
 ### 目录结构
 
@@ -366,16 +366,16 @@ make help
 
 常用命令：
 - 初始化构建器（一次）：make builder
-- 构建单个镜像（不推送）：make build OS=ubuntu VERSION=2.0.10 ONEPANEL_TYPE=cn
+- 构建单个镜像（不推送）：make build OS=ubuntu VERSION=2.0.11 ONEPANEL_TYPE=cn
 - 推送单个镜像：make push OS=centos VERSION=2.0.0 ONEPANEL_TYPE=cn
-- 本机调试（加载到本地）：make load OS=ubuntu VERSION=2.0.10
+- 本机调试（加载到本地）：make load OS=ubuntu VERSION=2.0.11
 - 多架构构建（不推送）：make buildx OS=centos VERSION=2.0.0
-- 多架构构建并推送：make push OS=alpine VERSION=2.0.10
-- 批量矩阵推送（3 OS × 2.0.0~2.0.10）：make matrix-push
+- 多架构构建并推送：make push OS=alpine VERSION=2.0.11
+- 批量矩阵推送（3 OS × 2.0.0~2.0.11）：make matrix-push
 
 变量：
 - OS=ubuntu|centos|alpine
-- VERSION=2.0.0~2.0.10（注入到 {%OnePanel_Version%}）
+- VERSION=2.0.0~2.0.11（注入到 {%OnePanel_Version%}）
 - ONEPANEL_TYPE=pro|cn（注入到 {%OnePanel_Type%}）
 - PLATFORMS=linux/amd64,linux/arm64（可改为单架构）
 - IMAGE_REPO=caijiamx/1panel，IMAGE_TAG_PREFIX=dood
@@ -384,10 +384,10 @@ make help
 
 ```bash
 # 调试单个命令
-make -n build OS=ubuntu VERSION=2.0.10 ONEPANEL_TYPE=cn
+make -n build OS=ubuntu VERSION=2.0.11 ONEPANEL_TYPE=cn
 
 # 构建单个镜像
-make build OS=ubuntu VERSION=2.0.10 ONEPANEL_TYPE=cn
+make build OS=ubuntu VERSION=2.0.11 ONEPANEL_TYPE=cn
 ```
 
 命名规范：caijiamx/1panel:dood-{version}-{os}-cn
@@ -397,7 +397,7 @@ make build OS=ubuntu VERSION=2.0.10 ONEPANEL_TYPE=cn
 工作流：.github/workflows/main.yml（“Build and Push 1Panel Images”）
 
 - 触发方式：推送分支 main/dev 或手动 workflow_dispatch
-- 构建矩阵：OS=[ubuntu, centos, alpine]；VERSION=[2.0.0..2.0.10]
+- 构建矩阵：OS=[ubuntu, centos, alpine]；VERSION=[2.0.0..2.0.11]
 - 多架构：linux/amd64, linux/arm64（使用 setup-qemu + buildx）
 - 版本替换：构建前用 sed 将 Dockerfile 中 v{%OnePanel_Version%} 替换为具体版本
 - 推送目标：caijiamx/1panel:dood-{version}-{os}
@@ -408,7 +408,7 @@ make build OS=ubuntu VERSION=2.0.10 ONEPANEL_TYPE=cn
 
 ## 升级说明
 
-从 v2.0.0 -> v2.0.10升级为例，准备工作：
+从 v2.0.0 -> v2.0.11升级为例，准备工作：
 
 1. 备份原始镜像，如 v2.0.0
 2. 备份挂载数据。
@@ -418,7 +418,7 @@ make build OS=ubuntu VERSION=2.0.10 ONEPANEL_TYPE=cn
 
 开始升级步骤：
 
-1. 构建/拉取新版本镜像（例如 2.0.10）
+1. 构建/拉取新版本镜像（例如 2.0.11）
 2. 手动修改版本号
 3. 启动新服务。
 
@@ -429,8 +429,8 @@ make build OS=ubuntu VERSION=2.0.10 ONEPANEL_TYPE=cn
 sudo apt-get update && apt-get install -y sqlite3
 cp /opt/1panel/db/core.db  /opt/1panel/db/core.db.bak
 cp /opt/1panel/db/agent.db /opt/1panel/db/agent.db.bak
-sqlite3 /opt/1panel/db/core.db "UPDATE settings SET value='v2.0.10' WHERE key='SystemVersion';"
-sqlite3 /opt/1panel/db/agent.db "UPDATE settings SET value='v2.0.10' WHERE key='SystemVersion';"
+sqlite3 /opt/1panel/db/core.db "UPDATE settings SET value='v2.0.11' WHERE key='SystemVersion';"
+sqlite3 /opt/1panel/db/agent.db "UPDATE settings SET value='v2.0.11' WHERE key='SystemVersion';"
 ```
 更新镜像后重启容器（保留 /opt/ 数据卷）。
 
@@ -439,11 +439,13 @@ sqlite3 /opt/1panel/db/agent.db "UPDATE settings SET value='v2.0.10' WHERE key='
 ### 服务&功能限制
 
 1. 面板->右下角更新->“立即升级”不可用。官方升级逻辑依赖 systemctl 停启服务。
-2. 面板->容器功能不可用。服务判定 docker 存活依赖 systemctl status，后续会优化不再依赖 systemctl。
+2. ~~面板->容器功能不可用。服务判定 docker 存活依赖 systemctl status，后续会优化不再依赖 systemctl。~~
 3. nginx_status 默认仅监听 127.0.0.1，需自行调整。参考：[OpenResty 当前状态报错](#OpenResty 当前状态报错)
 4. 部分应用安装时挂载路径出现异常，需按实际路径修正。
 5. 1panel-core&1panel-agent 运行用户为 root。指定用户 nobody 运行的话，服务 1panel-agent 会挂掉。
 6. 工具箱->进程守护、FTP、Fail2ban 不可用。
+7. v2.0.11 版本改进了 docker 服务判定逻辑，面板->容器功能基本可用（完整功能未全面测试）。
+8. v2.0.11 新增磁盘管理，不建议使用该功能。
 
 ### FAQ
 
