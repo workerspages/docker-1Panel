@@ -436,6 +436,15 @@ After updating image, restart the container (preserve /opt/ volume).
 7. Version v2.0.11 improves the Docker service decision logic, and the Panel->Container function is basically available (the full functionality has not been fully tested).
 8. Version v2.0.11 adds disk management, which is not recommended.
 
+**Panel Unavailable Functions**
+
+| Function                                                     | Available | Remarks             |
+| ------------------------------------------------------------ | --------- | ------------------- |
+| Panel -> Upgrade Now (bottom right corner)                   | ❌         |                     |
+| Website -> Website -> OpenResty Settings -> Current Status<br/>Website -> Runtime Environment -> php-fpm container status check | ❌         |                     |
+| Toolbox -> Process Supervisor, FTP, Fail2ban, Disk Management | ❌         | Function not tested |
+| Advanced Features                                            | ❌         | Function not tested |
+
 ### Q&A
 
 #### App install error “Are you trying to mount a directory onto a file”
