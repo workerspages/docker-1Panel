@@ -6,11 +6,14 @@
 
 targetDir=${INSTALL_DIR}
 if [[ -f ${targetDir}/install.sh ]]; then
-    # comments startup service logic
+    # comment startup service logic
     # systemctl enable xxx
     # systemctl start xxx
     # systemctl status xxx
-    sed -i '/systemctl enable 1panel-agent\.service/,/^ *done/ s/^/## /' ${targetDir}/install.sh
+    sed -i '/cp \.\/1panel-core\.service/,+23 s/^/#/' ${targetDir}/install.sh
+    # comment install_and_configure start
+    sed -i '/    install_and_configure/,/cp -r \.\/initscript/ s/^/# /' ${targetDir}/install.sh
+
     # backup install.sh
     cp ${targetDir}/install.sh ../
 else
