@@ -1,6 +1,6 @@
 #!/bin/bash
-# 原始脚本下载地址：https://resource.fit2cloud.com/1panel/package/v2/quick_start.sh
-#Install Latest Stable 1Panel Release
+# Original script download address：https://resource.fit2cloud.com/1panel/package/v2/quick_start.sh
+# Install Latest Stable 1Panel Release
 
 osCheck=`uname -a`
 if [[ $osCheck =~ 'x86_64' ]];then
@@ -28,7 +28,7 @@ else
 fi
 
 #VERSION=$(curl -s https://resource.fit2cloud.com/1panel/package/v2/${INSTALL_MODE}/latest)
-# 版本号为第一个传入的参数
+# The version number is the first parameter passed in.
 VERSION=$1
 HASH_FILE_URL="https://resource.fit2cloud.com/1panel/package/v2/${INSTALL_MODE}/${VERSION}/release/checksums.txt"
 
@@ -76,7 +76,7 @@ fi
 # expose install_dir
 INSTALL_DIR=1panel-${VERSION}-linux-${architecture}
 export INSTALL_DIR
-# 注释 systemctl 相关脚本逻辑
+# Comment some exit logic, make docker build success
 /bin/bash fix_systemctl_start_cmd.sh
 
 cd 1panel-${VERSION}-linux-${architecture}
