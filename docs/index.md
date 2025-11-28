@@ -4,8 +4,6 @@
 
 ## 文档列表
 
-- [中文 README](README_cn.md)
+- [1Panel Docker 镜像（DooD 方案）](README_cn.html)
 
-如果你是从搜索来的，这里是项目主仓库：
-
-[geekwho-eth/docker-1Panel](https://github.com/geekwho-eth/docker-1Panel)
+如果你是从搜索来的，这里是项目主仓库：[geekwho-eth/docker-1Panel](https://github.com/geekwho-eth/docker-1Panel)
