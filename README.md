@@ -486,7 +486,7 @@ Error:
 
 Cause: health check to 127.0.0.1 fails; inside the container 127.0.0.1:80 points to 1panel, while openresty is a separate container. 1panel -> openresty should use http://openresty.
 
-Fix: add host alias: server_name 127.0.0.1 openresty; Correct URL: http://openresty/nginx_status.
+Fix it with add host alias: `server_name 127.0.0.1 openresty;` . Correct visit URL: http://openresty/nginx_status.
 
 A complete fix requires code changes:
 

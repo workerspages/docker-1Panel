@@ -567,6 +567,16 @@ CPU 限额过低可能导致接口超时（偶尔 5xx/超时），建议 1.0~1.5
 - 建议配置网络防火墙允许访问的IP以及端口。
 - 建议对面板做访问控制：域名限制、IP端口、机器隔离。
 
+## 参考项目
+
+1. [okxlin/docker-1panel](https://github.com/okxlin/docker-1panel)、[tangger2000/1panel-dood](https://github.com/tangger2000/1panel-dood)（项目已归档）
+2. [purainity/docker-1panel-v2](https://github.com/purainity/docker-1panel-v2)：[dph5199278/docker-1panel](https://github.com/dph5199278/docker-1panel)、[Xeath/1panel-in-docker](https://github.com/Xeath/1panel-in-docker)
+3. 
+
 ## 维护者
 
 - GeekWho <geekwho_eth@outlook.com>
+
+
+
+[返回首页](index.md)
