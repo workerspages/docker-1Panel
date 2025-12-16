@@ -7,8 +7,8 @@
 
 This repository builds and publishes Docker images for 1Panel using the DooD (Docker-out-of-Docker) design. It reuses the host Docker engine and uses supervisord to manage 1Panel processes, avoiding running systemd in containers or using --privileged.
 
-- Current latest image version: 2.0.13
-- Multi-version support: 2.0.0 ~ 2.0.11 (injected by placeholder replacement)
+- Current latest image version: 2.0.15
+- Multi-version support: 2.0.0 ~ 2.0.15 (injected by placeholder replacement)
 - Multiple OS: ubuntu, centos, alpine
 - Multi-arch: amd64, arm64 (buildx + QEMU)
 - Image naming: caijiamx/1panel:dood-{version}-{os}
