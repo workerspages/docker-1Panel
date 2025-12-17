@@ -3,7 +3,16 @@
 <p align="center">
   <a href="/README.md"><img alt="English" src="https://img.shields.io/badge/English-d9d9d9"></a>
   <a href="/docs/README_cn.md"><img alt="中文(简体)" src="https://img.shields.io/badge/中文(简体)-d9d9d9"></a>
+  <a href="https://github.com/geekwho-eth/docker-1Panel/actions/workflows/main.yml">
+    <img alt="GitHub Actions Status" src="https://github.com/geekwho-eth/docker-1Panel/actions/workflows/main.yml/badge.svg">
+  </a>
 </p>
+
+## 1Panel Docker Image Stats
+
+[![Docker Pulls](https://img.shields.io/docker/pulls/caijiamx/1panel.svg)](https://hub.docker.com/r/caijiamx/1panel)
+[![Docker Stars](https://img.shields.io/docker/stars/caijiamx/1panel.svg)](https://hub.docker.com/r/caijiamx/1panel)
+[![Docker Image Size (dood-2.0.15-alpine-cn)](https://img.shields.io/docker/image-size/caijiamx/1panel/dood-2.0.15-alpine-cn.svg)](https://hub.docker.com/r/caijiamx/1panel)
 
 This repository builds and publishes Docker images for 1Panel using the DooD (Docker-out-of-Docker) design. It reuses the host Docker engine and uses supervisord to manage 1Panel processes, avoiding running systemd in containers or using --privileged.
 
