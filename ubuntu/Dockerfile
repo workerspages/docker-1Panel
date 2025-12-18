@@ -39,7 +39,7 @@ RUN apt-get update -y && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # --- 修改：在线安装 Rclone (避免本地文件过大) ---
-# 使用官方脚本自动安装最新稳定版到 /usr/bin/rclone
+# 使用官方或第三方脚本自动安装最新稳定版到 /usr/bin/rclone
 RUN curl -fsSL https://raw.githubusercontent.com/wiserain/rclone/mod/install.sh | sudo bash 
 
 # 2. 安装 Docker 最新版 (CLI + 插件)
