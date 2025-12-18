@@ -109,6 +109,10 @@ docker exec -it 1panel bash
 
 # 取消安全入口
 1panel reset entrance
+
+# 登录 SSH (1panel 内置终端登录ssh)
+用户名：root
+密码：root
 ```
 
 #### docker-compose
