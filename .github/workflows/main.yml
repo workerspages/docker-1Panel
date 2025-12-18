@@ -61,7 +61,7 @@ jobs:
 
       - name: Build and Push (multi-arch)
         run: |
-          IMAGE=${{ vars.DOCKERHUB_USERNAME }}/${{ vars.DOCKERHUB_REPO }}:dood-${{ matrix.version }}-${{ matrix.os }}${{ matrix.onepanel_type == 'cn' && '-cn' || '' }}
+          IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/1panel:dood-${{ matrix.version }}-${{ matrix.os }}${{ matrix.onepanel_type == 'cn' && '-cn' || '' }}
           docker buildx build \
             --platform linux/amd64,linux/arm64 \
             -f .docker-tmp/Dockerfile \
@@ -114,7 +114,7 @@ jobs:
 
       - name: Build and Push (multi-arch)
         run: |
-          IMAGE=${{ vars.DOCKERHUB_USERNAME }}/${{ vars.DOCKERHUB_REPO }}:dood-${{ matrix.version }}-${{ matrix.os }}${{ matrix.onepanel_type == 'cn' && '-cn' || '' }}
+          IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/1panel:dood-${{ matrix.version }}-${{ matrix.os }}${{ matrix.onepanel_type == 'cn' && '-cn' || '' }}
           docker buildx build \
             --platform linux/amd64,linux/arm64 \
             -f .docker-tmp/Dockerfile \
