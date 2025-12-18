@@ -5,10 +5,10 @@ LABEL maintainer="GeekWho <geekwho_eth@outlook.com>"
 LABEL version="1.0"
 LABEL description="A 1Panel Docker Image Base on Ubuntu 24.04 with latest Docker CLI & Tools"
 
-# 设置非交互前端，防止安装过程中出现交互式提示卡死构建
+# Prevent interactive prompts during build
 ARG DEBIAN_FRONTEND=noninteractive
 
-# 1. 安装基础依赖及用户指定工具 (curl, wget, vim, nano, cron, lsof)
+# 1. Install basic dependencies and user-requested tools
 RUN apt-get update -y && \
     apt-get install -y \
     ca-certificates \
@@ -31,52 +31,52 @@ RUN apt-get update -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# 2. 安装 Docker 最新版 (CLI + 插件)
-# 添加 Docker 官方 GPG key
+# 2. Install Docker CLI (Latest Official Version)
+# Add Docker's official GPG key
 RUN mkdir -p /etc/apt/keyrings && \
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
 
-# 添加 Docker 官方软件源
+# Add the repository to Apt sources
 RUN echo \
     "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
     $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
 
-# 安装 Docker CLI, Buildx 和 Compose 插件
-# 注意：DooD 模式下容器内不需要运行 docker engine (docker-ce)，只需要 CLI 即可与宿主机通信
+# Install Docker CLI, Buildx, and Compose plugins
+# Note: For DooD, we only need the CLI to communicate with the host's daemon.
 RUN apt-get update -y && \
     apt-get install -y docker-ce-cli docker-buildx-plugin docker-compose-plugin && \
     rm -rf /var/lib/apt/lists/*
 
-# 3. 设置工作目录
+# 3. Set work directory
 WORKDIR /1panel
 
-# 挂载点声明 (DooD 核心)
+# Set docker.sock volume for DooD
 VOLUME /var/run/docker.sock
 
-# 4. 复制脚本
+# 4. Copy scripts
 COPY {%OnePanel_Type%}/quick_start.sh /1panel/quick_start.sh
 RUN chmod +x /1panel/quick_start.sh
 
 COPY {%OnePanel_Type%}/fix_systemctl_start_cmd.sh /1panel/fix_systemctl_start_cmd.sh
 RUN chmod +x /1panel/fix_systemctl_start_cmd.sh
 
-# 5. 安装 1Panel
-# {%OnePanel_Version%} 变量将在构建时由 Makefile 替换
+# 5. Install 1Panel
+# The {%OnePanel_Version%} placeholder is replaced by Makefile/CI during build
 RUN bash /1panel/quick_start.sh v{%OnePanel_Version%}
 
-# 6. 安装 Supervisord 用于进程管理
+# 6. Install Supervisor for process management
 RUN apt-get update -y && apt-get install -y supervisor && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# 复制 Supervisord 配置
+# Copy supervisord configuration
 COPY hack/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# 清理安装包
+# Remove unused files
 RUN rm -rf 1panel-v*-linux-*.tar.gz 1panel-v*-linux-*/
 
-# 暴露端口
+# Expose ports
 EXPOSE 80 443
 
-# 启动 Supervisord (以前台模式)
+# Run supervisord in exec form
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
