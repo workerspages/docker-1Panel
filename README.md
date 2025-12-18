@@ -1,4 +1,5 @@
-# 1Panel Docker Image (DooD Approach)
+
+# 1Panel Docker 镜像（DooD 方案）
 
 <p align="center">
   <a href="/README.md"><img alt="English" src="https://img.shields.io/badge/English-d9d9d9"></a>
@@ -8,74 +9,74 @@
   </a>
 </p>
 
-## 1Panel Docker Image Stats
+## 1Panel Docker 镜像统计数据
 
 [![Docker Pulls](https://img.shields.io/docker/pulls/caijiamx/1panel.svg)](https://hub.docker.com/r/caijiamx/1panel)
 [![Docker Stars](https://img.shields.io/docker/stars/caijiamx/1panel.svg)](https://hub.docker.com/r/caijiamx/1panel)
 [![Docker Image Size (dood-2.0.15-alpine-cn)](https://img.shields.io/docker/image-size/caijiamx/1panel/dood-2.0.15-alpine-cn.svg)](https://hub.docker.com/r/caijiamx/1panel)
 
-This repository builds and publishes Docker images for 1Panel using the DooD (Docker-out-of-Docker) design. It reuses the host Docker engine and uses supervisord to manage 1Panel processes, avoiding running systemd in containers or using --privileged.
+本仓库用于构建并发布 1Panel 的 Docker 镜像，采用 DooD（Docker-out-of-Docker）设计，复用宿主机 Docker 引擎，使用 supervisord 管理 1Panel 进程，避免在容器内运行 systemd 或使用 --privileged。
 
-- Current latest image version: 2.0.15
-- Multi-version support: 2.0.0 ~ 2.0.15 (injected by placeholder replacement)
-- Multiple OS: ubuntu, centos, alpine
-- Multi-arch: amd64, arm64 (buildx + QEMU)
-- Image naming: caijiamx/1panel:dood-{version}-{os}
-- Build method: GitHub Actions workflow + local Makefile
+- 当前镜像最新版本：2.0.15
+- 支持多版本：2.0.0 ~ 2.0.15（通过变量替换注入）
+- 支持多系统：ubuntu、centos、alpine
+- 支持多架构：amd64、arm64（buildx + QEMU）
+- 镜像命名：caijiamx/1panel:dood-{version}-{os}-cn
+- 构建方式：GitHub Actions 工作流 + 本地 Makefile
 
-Note: This solution targets trusted, single-tenant environments. For production, strictly control access and deploy proper protections (recommend WAF + network firewall).
+提示：本方案适合可信、单租户环境，生产环境使用需严格控制访问并做好防护策略（建议WAF+网络防火墙）。
 
-## Table of Contents
+## 目录
 
-- [Usage](#usage)
-  - [Features & Design](#features--design)
-  - [Supported OS and Tag Convention](#supported-os-and-tag-convention)
-  - [Quick Start](#quick-start)
+- [使用说明](#使用说明)
+  - [特性与设计](#特性与设计)
+  - [支持系统与命名规范](#支持系统与命名规范)
+  - [快速开始](#快速开始)
     - [docker run](#docker-run)
     - [docker-compose](#docker-compose)
-  - [Pull Images](#pull-images)
-  - [Directory Layout](#directory-layout)
-- [Implementation](#implementation)
-  - [systemctl Notes](#systemctl-notes)
-  - [supervisord Notes](#supervisord-notes)
-  - [About DooD](#about-dood)
-  - [Why DooD](#why-dood)
-  - [DooD vs DinD vs Sysbox Comparison](#dood-vs-dind-vs-sysbox-comparison)
-- [Build Guide](#build-guide)
-  - [Local Build (Makefile)](#local-build-makefile)
-  - [GitHub Actions Build](#github-actions-build)
-- [Upgrade Guide](#upgrade-guide)
-  - [Version Upgrade Steps](#version-upgrade-steps)
-- [FAQ](#faq)
-  - [Service & Feature Limitations](#service--feature-limitations)
-  - [Q&A](#qa)
+  - [镜像拉取](#镜像拉取)
+  - [目录结构](#目录结构)
+- [实现方案](#实现方案)
+  - [systemctl 注释说明](#systemctl-注释说明)
+  - [supervisord 说明](#supervisord-说明)
+  - [DooD说明](#DooD说明)
+  - [为什么选择DooD](#为什么选择DooD)
+  - [DooD vs DinD vs Sysbox对比](#DooD-vs-DinD-vs-Sysbox对比)
+- [构建说明](#构建说明)
+  - [本地构建（Makefile）](#本地构建makefile)
+  - [GitHub Actions 构建](#github-actions-构建)
+- [升级说明](#升级说明)
+  - [版本升级步骤](#版本升级步骤)
+- [常见问题](#常见问题)
+  - [服务&功能限制](#服务&功能限制)
+  - [FAQ](#FAQ)
 
-## Usage
+## 使用说明
 
-### Features & Design
+### 特性与设计
 
-- DooD: Containers share the host Docker engine and cache for faster builds and smaller footprint.
-- Process management: Do not run systemd in the container; instead use supervisord (foreground) to manage 1panel-core and 1panel-agent.
-- Version variable injection: Dockerfile contains placeholders, example (ubuntu):
+- DooD：容器共享宿主机 Docker 引擎与缓存，构建更快、占用更小。
+- 进程管理：容器内不运行 systemd，改用 supervisord 前台托管 1panel-core 与 1panel-agent。
+- 版本变量注入：Dockerfile 中包含占位符，示例（ubuntu）：
   ```
   RUN bash /1panel/quick_start.sh v{%OnePanel_Version%}
   ```
-  During build, sed replaces {%OnePanel_Version%} with a concrete version (2.0.0~2.0.11).
-- Multi-arch: buildx + QEMU produce linux/amd64 and linux/arm64 images; scripts auto-detect archive arch and download the correct package.
+  构建时以 sed 将 {%OnePanel_Version%} 替换为具体版本（2.0.0~2.0.15）。
+- 多架构：buildx + QEMU 生成 linux/amd64、linux/arm64 镜像；脚本会自动识别归档架构并下载对应包。
 
-### Supported OS and Tag Convention
+### 支持系统与命名规范
 
-- OS: ubuntu, centos, alpine
-- Versions: 2.0.0 ~ 2.0.11
-- Architectures: amd64, arm64 (auto-match download)
-- Tag format:
-  - caijiamx/1panel:dood-{version}-{os}
-  - Example: caijiamx/1panel:dood-2.0.11-ubuntu
+- 系统：ubuntu、centos、alpine
+- 版本：2.0.0 ~ 2.0.15
+- 架构：amd64、arm64（自动匹配下载包）
+- 标签规范：
+  - caijiamx/1panel:dood-{version}-{os}-cn
+  - 例：caijiamx/1panel:dood-2.0.15-ubuntu-cn
 
-### Quick Start
+### 快速开始
 
 #### docker run
-Username, password, and port are auto-generated at image build; you can adjust them after the container starts. Assume the panel port is 8888. Example:
+容器构建自动生成用户名、密码、端口，可启动后在容器内调整。这里假设面板默认端口为 8888。运行命令示例：
 
 ```bash
 docker run -d --name 1panel --restart unless-stopped \
@@ -83,25 +84,25 @@ docker run -d --name 1panel --restart unless-stopped \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v /var/lib/docker/volumes:/var/lib/docker/volumes \
   -v /1panel_app/data/:/opt/ \
-  caijiamx/1panel:dood-2.0.11-ubuntu
+  caijiamx/1panel:dood-2.0.15-ubuntu-cn
 ```
 
-Initialization (inside container):
+初始化（容器内）：
 
-Important reminder x3:
+**重要的事情讲三遍！！！**
 
-Change username/password/entry on first deployment!
+**首次部署务必修改用户名/密码/入口!**
 
-Change username/password/entry on first deployment!
+**首次部署务必修改用户名/密码/入口!**
 
-Change username/password/entry on first deployment!
+**首次部署务必修改用户名/密码/入口!**
 
 ```bash
 docker exec -it 1panel bash
-# Check security entry and current settings
+# 查看安全入口与当前配置
 1panel user-info
 
-# Change port/user/password
+# 修改端口/用户/密码
 1panel update port
 1panel update username
 1panel update password
@@ -109,12 +110,11 @@ docker exec -it 1panel bash
 
 #### docker-compose
 
-An example docker-compose.yml is provided (with required DooD mounts):
-
+仓库内提供示例 docker-compose.yml（DooD 必要挂载已包含）：
 ```yaml
 services:
   one_panel:
-    image: caijiamx/1panel:dood-2.0.11-ubuntu
+    image: caijiamx/1panel:dood-2.0.15-ubuntu-cn
     container_name: 1panel
     restart: unless-stopped
     ports:
@@ -125,139 +125,143 @@ services:
       - /1panel_app/data/:/opt/
 ```
 
-Key fields in docker-compose.yml:
+docker-compose.yml关键字段：
 
-- image: e.g., caijiamx/1panel:dood-2.0.11-ubuntu
-- ports: external port mapping, e.g., 8888:8888
-- volumes (required for DooD):
+- image：镜像标签如 caijiamx/1panel:dood-2.0.15-ubuntu-cn
+- ports：对外端口映射，示例 8888:8888
+- volumes（DooD 必要挂载）：
   - /var/run/docker.sock:/var/run/docker.sock
   - /var/lib/docker/volumes:/var/lib/docker/volumes
-  - /panel_app/data/:/opt/  # unify this path for data persistence
-- healthcheck: simple process check (core/agent present)
-- extra_hosts: host-gateway to access the host
-- networks: use external network one_panel (create first)
+  - /panel_app/data/:/opt/  # 建议统一此路径，便于数据持久化
+- healthcheck：简单进程检查（core/agent 是否存在）
+- extra_hosts：host-gateway 方便访问宿主机
+- networks：使用外部网络 one_panel（先创建网络）
 
-Start:
+启动服务：
 
 ```
 docker network create one_panel
 docker compose up -d
 ```
 
-Notes:
+提示：
 
-- No --privileged, no /sys/fs/cgroup mount, no systemd inside the container.
-- Persist /opt/ (default install path /opt/1panel).
+- 不使用 --privileged、不挂载 /sys/fs/cgroup，不在容器内运行 systemd。
+- 持久化 /opt/（默认安装到 /opt/1panel）。
 
-### Pull Images
+### 镜像拉取
 
 ```bash
 # Ubuntu
-docker pull caijiamx/1panel:dood-2.0.11-ubuntu
+docker pull caijiamx/1panel:dood-2.0.15-ubuntu-cn
 # CentOS
-docker pull caijiamx/1panel:dood-2.0.11-centos
+docker pull caijiamx/1panel:dood-2.0.15-centos-cn
 # Alpine
-docker pull caijiamx/1panel:dood-2.0.11-alpine
+docker pull caijiamx/1panel:dood-2.0.15-alpine-cn
 ```
 
-Replace {version} with 2.0.0~2.0.11 and {os} with ubuntu/centos/alpine.
+将 {version} 替换为 2.0.0~2.0.15，{os} 替换为 ubuntu/centos/alpine。
 
-### Directory Layout
+### 目录结构
 
 ```
-alpine/   # Alpine Dockerfile template
-centos/   # CentOS Dockerfile template
-ubuntu/   # Ubuntu Dockerfile template
-hack/     # install and systemctl-comment scripts, supervisord config
-hack_cn/  # install and systemctl-comment scripts, supervisord config
-.github/workflows/main.yml  # GitHub Actions: multi-version/os/arch build & push
-docker-compose.yml          # container run config
-Makefile                    # local build/push/matrix
+alpine/   # Alpine Dockerfile 模板
+centos/   # CentOS Dockerfile 模板
+ubuntu/   # Ubuntu Dockerfile 模板
+hack/     # 安装与 systemctl 注释脚本、supervisord 配置
+hack_cn/     # 安装与 systemctl 注释脚本、supervisord 配置
+.github/workflows/main.yml  # GitHub Action CI 多版本/多系统/多架构构建与推送
+docker-compose.yml          # 容器运行配置
+Makefile                    # 本地构建/推送/矩阵任务
 ```
+## 实现方案
 
-## Implementation
+### systemctl 注释说明
 
-### systemctl Notes
+- 脚本：hack/fix_systemctl_start_cmd.sh
+- 作用：在安装包解压后、执行 install.sh 前，注释掉 systemctl 相关步骤，避免容器依赖 systemd。
+- 影响：面板内基于 systemctl 的检查/操作可能不可用或显示异常；进程管理交由 supervisord。
 
-- Script: hack/fix_systemctl_start_cmd.sh
-- Purpose: After extracting the installer and before running install.sh, comment out systemctl-related steps to avoid systemd dependency.
-- Impact: Panel checks/operations based on systemctl may not work or display incorrectly; process management is handled by supervisord.
 
-#### Services managed by systemctl
 
-Generated by GitHub Copilot on 2025-09-09
+#### 涉及 systemctl 管理的服务
 
-Based on 1Panel-dev/1Panel code, the following services are mainly managed by systemctl. If systemctl is unavailable (e.g., WSL, some containers, minimal distros), start/stop/restart/status will be affected and some panel features will be unavailable or abnormal.
+20250909 由GitHub copilot 生成
 
-| Service Name                 | Description                         | Impact when systemctl unavailable          | Code references                                            | Notes                                          |
-| --------------------------- | ----------------------------------- | ------------------------------------------ | ---------------------------------------------------------- | ----------------------------------------------|
-| 1panel-core.service         | 1Panel core service                 | Cannot start/restart/query; core broken    | core/app/service/setting.go, common.go, core/app/service/upgrade.go, RestartService (common.go), UpdateBindInfo/UpdatePort/UpdateSSL (setting.go), UpgradeService.Upgrade | Config, port, SSL, master, upgrade, rollback  |
-| 1panel-agent.service        | 1Panel agent (node)                 | Cannot start/restart/query; node issues    | agent/utils/common.go, common.go, core/app/service/upgrade.go, RestartService (common.go), UpgradeService.Upgrade | Node restart, post-upgrade restart, recovery  |
-| docker.service, docker.socket | Docker daemon                      | Container mgmt features unusable           | agent/app/service/docker.go                                  | Container services, config changes restart     |
-| fail2ban.service            | Fail2Ban anti-bruteforce            | Rules cannot be toggled/reloaded/status    | agent/utils/toolbox/fail2ban.go                              | Enable/disable/reload/status                   |
-| clamav/clamd/freshclam      | ClamAV antivirus                    | AV and DB updates unusable                 | agent/app/service/clam.go                                    | Start/stop/scan/update                         |
-| ssh/sshd.service            | SSH service                         | Remote mgmt/SSH config issues              | agent/app/service/ssh.go                                     | Start/stop/config/hardening                    |
-| supervisor/supervisord      | Supervisor process manager          | Process guarding unavailable               | Frontend copy/scripts                                        | Start/stop tasks, automation, script run       |
+根据 1Panel-dev/1Panel 仓库代码，涉及 systemctl 管理的服务主要有以下几类。如果 systemctl 不可用（如 WSL、部分容器、极简发行版等），这些服务的启动/停止/重启/状态查询都将受到影响，面板功能也会有部分不可用或异常。
 
-#### Code notes
+| 服务名称                      | 作用/描述                    | systemctl不可用时影响                    | 代码依据/说明                                                | 说明                                            |
+| ----------------------------- | ---------------------------- | ---------------------------------------- | ------------------------------------------------------------ | ----------------------------------------------- |
+| 1panel-core.service           | 1Panel 核心服务              | 无法启动/重启/查询状态，面板核心功能异常 | core/app/service/setting.go, common.go、core/app/service/upgrade.go、RestartService (common.go), UpdateBindInfo/UpdatePort/UpdateSSL (setting.go), UpgradeService.Upgrade | 面板配置、端口、SSL、主控服务、升级、回滚等重启 |
+| 1panel-agent.service          | 1Panel Agent服务（节点服务） | 无法启动/重启/查询状态，节点管理异常     | agent/utils/common.go, common.go、core/app/service/upgrade.go、RestartService (common.go), UpgradeService.Upgrade | 节点服务重启、升级后重启、节点异常恢复          |
+| docker.service, docker.socket | Docker 守护进程              | 容器管理、重启、停止等功能不可用         | agent/app/service/docker.go                                  | 容器服务、应用容器管理、配置变更后重启          |
+| fail2ban.service              | 防暴力破解服务（Fail2Ban）   | 防护规则无法启停、重载或查询状态         | agent/utils/toolbox/fail2ban.go                              | 防护规则启停、重载、状态查询                    |
+| clamav/clamd/freshclam        | 病毒扫描服务（ClamAV）       | 杀毒、病毒库更新相关功能不可用           | agent/app/service/clam.go                                    | 杀毒服务启停、查杀操作、病毒库更新              |
+| ssh/sshd.service              | SSH 服务                     | 远程管理、SSH配置功能异常                | agent/app/service/ssh.go                                     | SSH服务启停、配置变更、安全加固                 |
+| supervisor/supervisord        | 进程守护服务（Supervisor）   | 守护进程管理功能不可用                   | 前端文案、脚本管理相关                                       | 守护进程启停、自动化任务、脚本运行              |
 
-1. All services managed by systemctl depend on systemd.
-   - Code invokes systemctl (restart, start, stop, status, is-active, is-enabled).
-   - If systemctl is unavailable, commands fail; panel cannot control services.
-2. Docker, SSH, Fail2Ban, ClamAV, Supervisor are integrated via systemctl.
-   - Panel calls systemctl to restart/check status; failures break features.
-   - Some detection via snap exists (agent/utils/systemctl/systemctl.go) but depends on snap and is not a general replacement.
-3. Panel self-services (core/agent) are also managed via systemctl.
-   - The panel cannot self-restart/recover; cannot manage nodes remotely.
+#### 代码说明
+
+1. **所有涉及 systemctl 的服务都依赖 systemd**
+   - 代码中通过 systemctl 命令（如 restart, start, stop, status, is-active, is-enabled）管理服务。
+   - 如 systemctl 不可用，这些命令将执行失败，服务无法被面板控制。
+2. **Docker、SSH、Fail2Ban、ClamAV、Supervisor 这些常用服务都通过 systemctl 集成**
+   - 面板会自动调用 systemctl 重启、检测状态，如果命令失败则功能不可用或报错。
+   - 部分服务有 snap 或其它方式检测
+   - 代码如 agent/utils/systemctl/systemctl.go 有 snap 服务的检测和操作，但依赖 snap 环境，非 systemctl 的通用替代。
+3. **面板自身服务（core/agent）也通过 systemctl 管理**
+   - 面板自身无法自我重启/恢复，也无法远程管理节点。
 
 ------
 
-#### Panel feature impact without systemctl
+#### systemctl 不可用时影响的面板功能
 
-- Panel shows services abnormal or not running
-- Cannot start/stop Docker, Agent, SSH, Supervisor via panel
-- Some config changes won’t take effect automatically (e.g., port, SSL)
+- 面板显示服务异常或未运行
+- 无法通过面板启停 Docker、Agent、SSH、守护进程等
+- 部分面板配置修改后无法自动生效（如端口、SSL等）
 
-See also: Service & Feature Limitations.
+详细参考：[服务&功能限制](#服务&功能限制)
 
-#### Main API/function examples
+#### 主要接口/函数举例
 
-- /api/v1/setting/update_port — after change, RestartService uses systemctl to restart core
-- /api/v1/setting/update_ssl — triggers systemctl restart core
-- /api/v1/upgrade/upgrade — UpgradeService.Upgrade calls systemctl restart core/agent
-- /api/v1/upgrade/rollback — handleRollback calls systemctl to restart core/agent
-- /api/v1/docker/restart — OperateDocker triggers systemctl restart docker
-- /api/v1/agent/restart — restart agent service
-- /api/v1/fail2ban/operate — toggle security rules
-- /api/v1/clam/operate — toggle antivirus
-- /api/v1/ssh/operate — toggle SSH service
-- /api/v1/supervisor/operate — toggle supervisor
+- `/api/v1/setting/update_port` —— 端口修改，涉及 `RestartService` 调用 systemctl 重启 core 服务
+- `/api/v1/setting/update_ssl` —— SSL 配置修改后，涉及 systemctl 重启 core 服务
+- `/api/v1/upgrade/upgrade` —— 升级接口，涉及 `UpgradeService.Upgrade`，systemctl 重启 core/agent 服务
+- `/api/v1/upgrade/rollback` —— 回滚接口，涉及 `UpgradeService.handleRollback`，systemctl 重启 core/agent 服务
+- `/api/v1/docker/restart` —— 容器管理，调用 `OperateDocker`，systemctl 重启 docker 服务
+- `/api/v1/agent/restart` —— 节点管理，重启 agent 服务
+- `/api/v1/fail2ban/operate` —— 安全防护策略启停
+- `/api/v1/clam/operate` —— 病毒查杀服务启停
+- `/api/v1/ssh/operate` —— SSH 服务启停与配置
+- `/api/v1/supervisor/operate` —— 守护进程服务启停
 
-Upgrade-related systemctl calls:
 
-- In core/app/service/upgrade.go, UpgradeService.Upgrade may call:
-  - systemctl daemon-reload
-  - systemctl restart 1panel-agent.service
-  - systemctl restart 1panel-core.service
-- Rollback also restarts related services.
-- In other branches/history, functions like handleRollback/handleBackup may call systemctl daemon-reload && systemctl restart 1panel.service.
 
-### supervisord Notes
+Upgrade 相关 systemctl 调用补全说明
 
-- Config: hack/supervisord.conf (nodaemon=true, foreground)
-- Programs:
+- 代码如 `core/app/service/upgrade.go` 的 `UpgradeService.Upgrade` 实现，升级成功后会调用：
+  - `systemctl daemon-reload`
+  - `systemctl restart 1panel-agent.service`
+  - `systemctl restart 1panel-core.service`
+- 回滚也会涉及 systemctl 重启相关服务。
+- 其他分支或历史版本中，升级、回滚等函数如 `handleRollback`、`handleBackup` 也会调用 `systemctl daemon-reload && systemctl restart 1panel.service`。
+
+### supervisord 说明
+
+- 配置：hack/supervisord.conf（nodaemon=true 前台运行）
+- 托管：
   - program:1panel-core -> /usr/bin/1panel-core
   - program:1panel-agent -> /usr/bin/1panel-agent
-- Common commands:
+- 常用命令：
 ```bash
 supervisorctl status
 supervisorctl restart all
 supervisorctl reload
 ```
 
-#### Why not systemd
+#### 为什么不使用systemd
 
-To run systemd in Docker typically:
+运行一个 systemd ，通常需要这样设置：
 
 ```shell
 docker run -d -it \
@@ -270,48 +274,53 @@ docker run -d -it \
   trfore/docker-ubuntu2404-systemd:latest
 ```
 
-Key risks of --privileged + --cgroupns=host + /sys/fs/cgroup mount:
 
-1. Host isolation breaks
-   - --privileged grants all Linux capabilities (cap_sys_admin, cap_net_admin, etc.), effectively root.
-   - Can operate host devices, network stack, even load kernel modules.
-2. cgroup leakage
-   - With --cgroupns=host and /sys/fs/cgroup mounted, the container can manipulate host cgroups, change CPU/mem limits, kill processes of other containers.
-3. Host privilege escalation/escape
-   - A privileged container is effectively host root; isolation is compromised.
-   - If an attacker gets a shell, they effectively get host root.
+核心风险点在于 `--privileged + --cgroupns=host + --volume /sys/fs/cgroup`：
 
-## Conclusion
+1. **宿主机隔离被打破**
+   - `--privileged` 让容器有所有 Linux capabilities（cap_sys_admin、cap_net_admin 等），等同 root。
+   - 可以直接操作宿主机设备文件、网络栈，甚至加载内核模块。
 
-1. Do not use --privileged in production.
-2. Running systemd in Docker is not feasible in current stage.
-3. Use supervisord as an alternative for service management.
+2. **cgroup 控制泄露**
+   - `--cgroupns=host` + 挂载 `/sys/fs/cgroup` → 容器能操作宿主机的 cgroups，修改 CPU/内存限制、杀死其他容器的进程。
 
-Reference repos:
+3. **宿主机提权/逃逸**
+   - 特权容器几乎等于在宿主机上直接跑 root，隔离形同虚设。
+   - 如果攻击者拿到这个容器的 shell，就相当于拿到了宿主机 root。
+
+## 结论
+
+1. 不要在生产环境使用 `--privileged` 参数。
+2. 现有阶段 docker 运行 systemd 不可行。
+3. 作为备用方案，可使用 supervisord 来服务管理。
+
+参考版本库：
 
 1. https://github.com/trfore/docker-ubuntu2404-systemd
 2. https://github.com/antmelekhin/docker-systemd
-3. Use only for development environments.
+3. 建议只在开发环境使用。
 
-### About DooD
+### DooD说明
 
-This guide provides an “unofficial” 1Panel Docker deployment:
+本指南提供一种“非官方”的 1Panel Docker 部署方案：
 
-1. DooD (Docker Out of Docker) means invoking the external Docker from within a container.
-   The simplest approach is to share the host Docker sock and volumes.
-2. With DooD, reuse the host Docker engine and manage processes with supervisord, avoiding systemd and --privileged within the container.
-3. Use cautiously in trusted/single-tenant scenarios. Configure security rules (WAF, firewall).
+1. 所谓的 DooD，就是 Docker Out of Docker。简单来讲，就是在一个 docker 容器内部调用外部的 Docker。
+   最简单的实现方式，共享 Host docker 的 sock 和 volumes。
+2. 使用 DooD（Docker‑out‑of‑Docker）复用宿主机 Docker 引擎，配合 supervisord 管理进程，避免在容器内运行 systemd 与 --privileged。
+3. 请在可信/单租户场景谨慎使用。需单独配置安全规则，如 WAF、防火墙。
 
-The container must reuse the host Docker for app install/orchestration; mount:
+
+
+容器内需复用宿主机 Docker 以安装/编排应用，需挂载：
 
 - /var/run/docker.sock:/var/run/docker.sock
 - /var/lib/docker/volumes:/var/lib/docker/volumes
-- Data persistence (map /1panel_app/data/ to /opt/ in the container)
+- 数据持久化目录（示例将 /1panel_app/data/ 映射到容器内 /opt/）
 
-docker-compose.yml snippet:
+参考docker-compose.yml：
 
 ```yml
-# Key configuration
+# 关键配置
 volumes:
       # make docker out of docker work
       - /var/run/docker.sock:/var/run/docker.sock
@@ -319,110 +328,114 @@ volumes:
       - /1panel_app/data/:/opt/
 ```
 
-### Why DooD
 
-### Option comparison: DooD vs DinD vs Sysbox
 
-- DooD (used in this guide)
-  - Pros: share host image cache; fast builds, small footprint; simple to implement
-  - Cons: high security risk (container controls host Docker), not for multi-tenant
-  - Use cases: local/trusted, personal or single-tenant CI
+### 为什么选择DooD
+
+### 方案选型：DooD vs DinD vs Sysbox
+
+- DooD（本指南采用）
+  - 优点：共享宿主机镜像缓存，构建快、占用少；实现简单
+  - 缺点：安全风险高（容器可控制宿主机 Docker），不适合多租户
+  - 适用：本机/可信环境、个人或单租户 CI
 - DinD
-  - Pros: isolates engine inside container
-  - Cons: requires --privileged, escape risk
-  - Use cases: temporary/non-production security scenarios, use cautiously
+  - 优点：容器内外引擎隔离
+  - 缺点：需要 --privileged，存在逃逸风险
+  - 适用：临时环境/非生产安全场景，谨慎使用
 - Sysbox
-  - Safer DinD alternative, but requires specific kernels/distros; ecosystem less mature
+  - 相对更安全的 DinD 替代，但对内核/发行版有要求，生态不如官方成熟
 
-Conclusion:
+结论：
 
-Adopt DooD + supervisord for now; explicitly avoid running systemd with --privileged in production.
+在当前条件下选用 DooD + supervisord，明确拒绝在生产环境用 --privileged 跑 systemd。
 
-### Dood vs DinD vs Sysbox Comparison
+### DooD vs DinD vs Sysbox对比
 
-| Dimension     | DooD (Docker-out-of-Docker)                                 | DinD (Docker-in-Docker)                                      | Sysbox                                                     |
-| ------------- | ------------------------------------------------------------ | ------------------------------------------------------------ | ---------------------------------------------------------- |
-| Principle     | Mount host Docker socket; reuse host engine                  | Run an independent Docker engine inside the container        | Use Sysbox runtime; safely run Docker/K8s-like system workloads in containers |
-| Pros          | - Reuse host cache → fast builds, low disk usage             | - Easy to use, official DinD images exist - Engine isolation | - No privileged container - User namespace isolation - Proc/sysfs virtualization - Good for system workloads |
-| Cons          | - High security risk: container can control host Docker; not for multi-tenant - Bind mount limitations may affect some features | - Needs privileged; root in container ~= root on host; escape risk | - Requires newer kernels/distros; community still evolving |
-| Security      | High risk                                                    | High risk                                                    | Relatively lower risk                                      |
-| Scenarios     | Local dev/testing; single/trusted environment                | CI/CD requiring separate Docker env; simple sandbox          | Multi-tenant CI runners; secure sandbox; run system workloads |
-| Recommendation| Recommended with access control                              | Use with caution (non-production)                            | Not recommended (complex setup)                            |
+| 特性维度     | **DooD (Docker-out-of-Docker)**                              | **DinD (Docker-in-Docker)**                                  | **Sysbox**                                                   |
+| ------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| **基本原理** | 容器内挂载宿主机 Docker socket，直接复用宿主机 Docker 引擎   | 在容器中运行独立的 Docker 引擎（DinD 镜像）                  | 使用 Sysbox 作为底层 runtime，容器内可安全运行 Docker / K8s 等系统级 workload |
+| **优点**     | - 共享宿主机镜像缓存，构建速度快- 节省磁盘空间               | - 简单易用，官方有现成 DinD 镜像- 容器内外引擎隔离，避免直接操作宿主机容器 | - 无需 privileged 容器- 使用 Linux user namespace 提供强隔离- 支持系统级 workload（Docker/K8s）- 与 Docker/K8s 无缝集成，使用方式类似 `runc` |
+| **缺点**     | - 安全风险极大：容器可直接控制宿主机 Docker，甚至删除宿主机所有容器- 不适合多租户环境- bind mount 限制，某些功能（如 volume 挂载）可能失效 | - 需要 privileged 权限运行，容器内 root = 宿主机 root- root 拥有全部 Linux capabilities，存在逃逸风险- 可直接访问宿主机设备和 /proc、/sys，能修改内核状态 | - 需要较新的 Linux 内核- 目前只支持部分 Linux 发行版- 仍在社区发展中，生态不如 Docker 官方成熟 |
+| **安全风险** | 高：容器内用户几乎等于宿主机 root 权限                       | 高：privileged 容器 = 宿主机 root + 全 capability，容易被利用 | 相对低：用户隔离（userns）、procfs/sysfs 虚拟化、syscall 拦截，避免直接 root 映射 |
+| **适用场景** | - 本地开发临时测试- 单人或可信环境                           | - CI/CD 流水线需要独立 Docker 环境- 简单快速的沙箱环境       | - CI/CD 多租户 runner- 安全沙箱环境- 在容器中运行系统级 workload（如 Docker/K8s） |
+| **推荐程度** | ✅ 推荐（需控制访问权限）                                     | ⚠️ 谨慎使用（非生产安全场景）                                 | ❌ 不推荐（配置复杂）                                         |
 
-Reference:
-1. Docker-in-Docker: Containerized CI Workflows: https://www.docker.com/resources/docker-in-docker-containerized-ci-workflows-dockercon-2023/
+参考链接：
 
-## Build Guide
+1. [Docker-in-Docker: Containerized CI Workflows](https://www.docker.com/resources/docker-in-docker-containerized-ci-workflows-dockercon-2023/)
 
-### Local Build (Makefile)
+## 构建说明
 
-Dependencies: Docker Desktop (with buildx), logged in to DockerHub (for push if needed).
+### 本地构建（Makefile）
 
-List commands:
+依赖：Docker Desktop（含 buildx），已登录 DockerHub（如需推送）。
+
+列出命令：
 ```bash
 make help
 ```
 
-Common commands:
-- Initialize builder (once): make builder
-- Build single image (no push): make build OS=ubuntu VERSION=2.0.11 ONEPANEL_TYPE=cn
-- Push single image: make push OS=centos VERSION=2.0.0 ONEPANEL_TYPE=cn
-- Local debug (load to local): make load OS=ubuntu VERSION=2.0.11
-- Multi-arch build (no push): make buildx OS=centos VERSION=2.0.0
-- Multi-arch build and push: make push OS=alpine VERSION=2.0.11
-- Matrix push (3 OS × 2.0.0~2.0.11): make matrix-push
+常用命令：
+- 初始化构建器（一次）：make builder
+- 构建单个镜像（不推送）：make build OS=ubuntu VERSION=2.0.15 ONEPANEL_TYPE=cn
+- 推送单个镜像：make push OS=centos VERSION=2.0.0 ONEPANEL_TYPE=cn
+- 本机调试（加载到本地）：make load OS=ubuntu VERSION=2.0.15
+- 多架构构建（不推送）：make buildx OS=centos VERSION=2.0.0
+- 多架构构建并推送：make push OS=alpine VERSION=2.0.15
+- 批量矩阵推送（3 OS × 2.0.0~2.0.15）：make matrix-push
 
-Variables:
+变量：
 - OS=ubuntu|centos|alpine
-- VERSION=2.0.0~2.0.11 (inject into {%OnePanel_Version%})
-- ONEPANEL_TYPE=pro|cn (inject into {%OnePanel_Type%})
-- PLATFORMS=linux/amd64,linux/arm64 (can set single)
-- IMAGE_REPO=caijiamx/1panel, IMAGE_TAG_PREFIX=dood
+- VERSION=2.0.0~2.0.15（注入到 {%OnePanel_Version%}）
+- ONEPANEL_TYPE=pro|cn（注入到 {%OnePanel_Type%}）
+- PLATFORMS=linux/amd64,linux/arm64（可改为单架构）
+- IMAGE_REPO=caijiamx/1panel，IMAGE_TAG_PREFIX=dood
 
-Examples
+构建示例
 
 ```bash
-# Dry-run a target
-make -n build OS=ubuntu VERSION=2.0.11 ONEPANEL_TYPE=pro
+# 调试单个命令
+make -n build OS=ubuntu VERSION=2.0.15 ONEPANEL_TYPE=cn
 
-# Build a single image
-make build OS=ubuntu VERSION=2.0.11 ONEPANEL_TYPE=pro
+# 构建单个镜像
+make build OS=ubuntu VERSION=2.0.15 ONEPANEL_TYPE=cn
 ```
 
-Tag convention: caijiamx/1panel:dood-{version}-{os}
+命名规范：caijiamx/1panel:dood-{version}-{os}-cn
 
-### GitHub Actions Build
+### GitHub Actions 构建
 
-Workflow: .github/workflows/main.yml (“Build and Push 1Panel Images”)
+工作流：.github/workflows/main.yml（“Build and Push 1Panel Images”）
 
-- Triggers: push to main/dev or manual workflow_dispatch
-- Matrix: OS=[ubuntu, centos, alpine]; VERSION=[2.0.0..2.0.11]
-- Multi-arch: linux/amd64, linux/arm64 (setup-qemu + buildx)
-- Version replacement: sed replaces v{%OnePanel_Version%} in Dockerfile before build
-- Push target: caijiamx/1panel:dood-{version}-{os}
-- Secrets required in repo:
+- 触发方式：推送分支 main/dev 或手动 workflow_dispatch
+- 构建矩阵：OS=[ubuntu, centos, alpine]；VERSION=[2.0.0..2.0.15]
+- 多架构：linux/amd64, linux/arm64（使用 setup-qemu + buildx）
+- 版本替换：构建前用 sed 将 Dockerfile 中 v{%OnePanel_Version%} 替换为具体版本
+- 推送目标：caijiamx/1panel:dood-{version}-{os}
+- 凭据：需要在仓库 Secrets 配置
   - DOCKERHUB_USERNAME
   - DOCKERHUB_TOKEN
-- Usage: On Actions page, select main workflow, click Run workflow, choose os and version
+- 使用方式：Actions 页面选择 main 工作流，点 Run workflow，选择 os 与 version
 
-## Upgrade Guide
+## 升级说明
 
-Upgrade example from v2.0.0 -> v2.0.11. Preparations:
+从 v2.0.0 -> v2.0.11升级为例，准备工作：
 
-1. Backup the original image (e.g., v2.0.0)
-2. Backup mounted data
-3. Stop the container
+1. 备份原始镜像，如 v2.0.0
+2. 备份挂载数据。
+3. 停止容器。
 
-### Version Upgrade Steps
+### 版本升级步骤
 
-1. Build/pull the new image (e.g., 2.0.11)
-2. Manually update the version number
-3. Start the new service
+开始升级步骤：
 
-### Manually update version number
+1. 构建/拉取新版本镜像（例如 2.0.11）
+2. 手动修改版本号
+3. 启动新服务。
 
-Official installs maintain version automatically; this image requires manually syncing the version (sqlite3 example):
+### 手动修改版本号
 
+官方安装会自动维护版本号；本镜像方案需手动同步版本号（示例使用 sqlite3）：
 ```bash
 sudo apt-get update && apt-get install -y sqlite3
 cp /opt/1panel/db/core.db  /opt/1panel/db/core.db.bak
@@ -430,77 +443,81 @@ cp /opt/1panel/db/agent.db /opt/1panel/db/agent.db.bak
 sqlite3 /opt/1panel/db/core.db "UPDATE settings SET value='v2.0.11' WHERE key='SystemVersion';"
 sqlite3 /opt/1panel/db/agent.db "UPDATE settings SET value='v2.0.11' WHERE key='SystemVersion';"
 ```
+更新镜像后重启容器（保留 /opt/ 数据卷）。
 
-After updating image, restart the container (preserve /opt/ volume).
+## 常见问题
 
-## FAQ
+### 服务&功能限制
 
-### Service & Feature Limitations
+1. 面板->右下角更新->“立即升级”不可用。官方升级逻辑依赖 systemctl 停启服务。
+2. ~~面板->容器功能不可用。服务判定 docker 存活依赖 systemctl status，后续会优化不再依赖 systemctl。~~
+3. nginx_status 默认仅监听 127.0.0.1，需自行调整。参考：[OpenResty 当前状态报错](#OpenResty 当前状态报错)
+4. 部分应用安装时挂载路径出现异常，需按实际路径修正。
+5. 1panel-core&1panel-agent 运行用户为 root。指定用户 nobody 运行的话，服务 1panel-agent 会挂掉。
+6. 工具箱->进程守护、FTP、Fail2ban 不可用。
+7. v2.0.11 版本改进了 docker 服务判定逻辑，面板->容器功能基本可用（完整功能未全面测试）。
+8. v2.0.11 新增磁盘管理，不建议使用该功能。
+9. v2.0.12 - v2.0.15 待验证兼容性。
 
-1. Panel -> bottom-right update -> “Upgrade Now” is unavailable. Official upgrade logic depends on systemctl.
-2. ~~Panel -> container features unavailable. Service liveness check depends on systemctl status; will be optimized to remove dependency.~~
-3. nginx_status listens on 127.0.0.1 by default; adjust accordingly. See: OpenResty status error.
-4. Some app install mount paths may be incorrect; fix per actual paths.
-5. 1panel-core & 1panel-agent run as root. Running under user nobody will make 1panel-agent crash.
-6. Toolbox -> Process Guard, FTP, Fail2ban unavailable.
-7. Version v2.0.11 improves the Docker service decision logic, and the Panel->Container function is basically available (the full functionality has not been fully tested).
-8. Version v2.0.11 adds disk management, which is not recommended.
+面板不可用功能表格如下：
 
-**Panel Unavailable Functions**
+| 功能                                                         | 是否可用 | 备注       |
+| ------------------------------------------------------------ | -------- | ---------- |
+| 面板->立即升级（右下角）                                     | ❌        |            |
+| 网站->网站->OpenResy设置->当前状态<br/>网站->运行环境->php-fpm容器状态检查 | ❌        |            |
+| 工具箱->进程守护、FTP、Fail2ban、磁盘管理                    | ❌        | 功能未测试 |
+| 高级功能                                                     | ❌        | 功能未测试 |
 
-| Function                                                     | Available | Remarks             |
-| ------------------------------------------------------------ | --------- | ------------------- |
-| Panel -> Upgrade Now (bottom right corner)                   | ❌         |                     |
-| Website -> Website -> OpenResty Settings -> Current Status<br/>Website -> Runtime Environment -> php-fpm container status check | ❌         |                     |
-| Toolbox -> Process Supervisor, FTP, Fail2ban, Disk Management | ❌         | Function not tested |
-| Advanced Features                                            | ❌         | Function not tested |
+### FAQ
 
-### Q&A
+#### 安装应用报错 “Are you trying to mount a directory onto a file”
 
-#### App install error “Are you trying to mount a directory onto a file”
+- 原因：主机路径与容器内路径不匹配（文件/目录）
+- 处理：按应用需求修正宿主机路径与映射关系
 
-- Cause: host path vs container path mismatch (file/dir)
-- Fix: correct the host path and mappings according to the app
-
-Example:
+举例：
 
 ```yml
-# docker-compose.yml inside container
+# 容器内docker-compose.yml配置
 - ${WEBSITE_DIR}:/www -> /1panel_app/data/1panel/www:/www
-# Default 1panel project dir inside container: /opt/1panel
+# 容器内默认 1panel 项目目录:/opt/1panel
 ```
 
-Common variables
+
+
+常用变量
 
 ```
-# Variables used by 1panel in docker-compose.yml
-${CONTAINER_NAME} # custom container name
+# 1panel 使用变量，用于文件 docker-compose.yml
+${CONTAINER_NAME} # 自定义容器名
 
-${IMAGE_NAME} # custom image name
+${IMAGE_NAME} # 自定义镜像名
 
-${PANEL_APP_PORT_HTTP} # custom port
+${PANEL_APP_PORT_HTTP} # 自定义端口
 
-${PANEL_WEBSITE_DIR} # defaults to /opt/1panel/www
+${PANEL_WEBSITE_DIR} # 默认为 /opt/1panel/www
 
-${WEBSITE_DIR} # defaults to /opt/1panel/www
+${WEBSITE_DIR} # 默认为 /opt/1panel/www
 ```
 
-#### OpenResty status error
 
-Error:
+
+#### OpenResty 当前状态报错
+
+报错信息：
 
 ```
 服务内部错误: Get "http://127.0.0.1/nginx_status": dial tcp 127.0.0.1:80: connect: connection refused
 ```
 
-Cause: health check to 127.0.0.1 fails; inside the container 127.0.0.1:80 points to 1panel, while openresty is a separate container. 1panel -> openresty should use http://openresty.
+原因：健康检查 127.0.0.1 访问失败，容器内访问 127.0.0.1 会访问 1panel 监听80端口，而 openresty 是单独的容器，1panel -> openresty 可以走 `http://openresty`。
 
-Fix it with add host alias: `server_name 127.0.0.1 openresty;` . Correct visit URL: http://openresty/nginx_status.
+处理：可为健康检查添加 `host：server_name 127.0.0.1 openresty;` 正确访问地址：<http://openresty/nginx_status>。
 
-A complete fix requires code changes:
+彻底解决问题，需要修改官方实现代码：
 
 ```go
-// agent/app/service/nginx.go
+# 文件路径：agent/app/service/nginx.go
 func (n NginxService) GetStatus() (response.NginxStatus, error) {
   // bala
   url := "http://127.0.0.1/nginx_status"
@@ -517,38 +534,60 @@ func (n NginxService) GetStatus() (response.NginxStatus, error) {
 }
 ```
 
-#### Reverse proxy config
 
-WebSocket/upgrade headers:
+
+#### 反向代理配置
+
+WebSocket/升级头
 
 ```nginx
 proxy_http_version 1.1;
 proxy_set_header Upgrade $http_upgrade;
 proxy_set_header Connection "upgrade";
-proxy_set_header Host $host;  # set explicitly if you need a fixed backend Host
+proxy_set_header Host $host;  # 若需要固定后端 Host，请显式设置
 ```
 
-#### Security entry and account info
 
-- After enabling security entry, check inside container: 1pctl user-info
-- On first deployment, change username/password/entry
-- Recommend WAF + network firewall to control access
 
-#### Cloudflare common ports
+#### 安全入口与账户信息
 
-- HTTP: 80, 8080, 8880, 2052, 2082, 2086, 2095
-- HTTPS: 443, 2053, 2083, 2087, 2096, 8443
+- 开启安全入口后，通过容器内命令查看：1pctl user-info
 
-#### Resources and timeouts
+- 首次部署务必修改用户名/密码/入口
 
-Low CPU limits may cause API timeouts (occasional 5xx/timeouts). Recommend 1.0~1.5 core.
+- 建议WAF+网络防火墙做好访问控制。
 
-## Security Notes
+  
 
-- DooD allows the container to control the host Docker; there are security risks. Use only in trusted, single-tenant environments.
-- Configure network firewalls to allow only necessary IPs and ports.
-- Restrict access to the panel: domain, IP/port, machine isolation.
+#### Cloudflare 常见端口
 
-## Maintainer
+- HTTP：80, 8080, 8880, 2052, 2082, 2086, 2095
+- HTTPS：443, 2053, 2083, 2087, 2096, 8443
+
+
+
+#### 资源与超时
+
+CPU 限额过低可能导致接口超时（偶尔 5xx/超时），建议 1.0~1.5 core。
+
+
+
+## 安全提示
+
+- DooD 允许容器控制宿主机 Docker，有一定安全风险。仅在可信、单租户环境使用。
+- 建议配置网络防火墙允许访问的IP以及端口。
+- 建议对面板做访问控制：域名限制、IP端口、机器隔离。
+
+## 参考项目
+
+1. [okxlin/docker-1panel](https://github.com/okxlin/docker-1panel)、[tangger2000/1panel-dood](https://github.com/tangger2000/1panel-dood)（项目已归档）
+2. [purainity/docker-1panel-v2](https://github.com/purainity/docker-1panel-v2)：[dph5199278/docker-1panel](https://github.com/dph5199278/docker-1panel)、[Xeath/1panel-in-docker](https://github.com/Xeath/1panel-in-docker)
+3. 
+
+## 维护者
 
 - GeekWho <geekwho_eth@outlook.com>
+
+
+
+[返回首页](index.html)
