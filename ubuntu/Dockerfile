@@ -2,17 +2,17 @@ ARG VERSION_TYPE=pro
 FROM ubuntu:24.04
 
 LABEL maintainer="GeekWho <geekwho_eth@outlook.com>"
-LABEL version="1.2"
-LABEL description="A 1Panel Docker Image Base on Ubuntu 24.04 with latest Docker CLI, Rclone, SSH & Root access"
+LABEL version="1.4"
+LABEL description="A 1Panel Docker Image Base on Ubuntu 24.04 with latest Docker CLI, Rclone (Online Install), SSH & Root access"
 
 # 设置非交互前端
 ARG DEBIAN_FRONTEND=noninteractive
 
-# --- 新增：设置时区为中国 (Asia/Shanghai) ---
+# --- 设置时区为中国 (Asia/Shanghai) ---
 ENV TZ=Asia/Shanghai
 
 # 1. 安装基础依赖及用户指定工具
-# --- 新增：在列表中添加了 tzdata (用于时区) 和 rclone ---
+# 注意：移除了本地 COPY 操作，确保安装了 curl 和 unzip 以便下载 rclone
 RUN apt-get update -y && \
     apt-get install -y \
     tzdata \
@@ -32,12 +32,15 @@ RUN apt-get update -y && \
     vim \
     nano \
     cron \
-    lsof \
-    rclone && \
-    # --- 新增：配置时区 ---
+    lsof && \
+    # --- 配置时区 ---
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# --- 修改：在线安装 Rclone (避免本地文件过大) ---
+# 使用官方脚本自动安装最新稳定版到 /usr/bin/rclone
+RUN curl -fsSL https://raw.githubusercontent.com/wiserain/rclone/mod/install.sh | sudo bash 
 
 # 2. 安装 Docker 最新版 (CLI + 插件)
 RUN mkdir -p /etc/apt/keyrings && \
@@ -75,7 +78,7 @@ RUN apt-get update -y && apt-get install -y supervisor && \
 # 复制 Supervisord 配置
 COPY hack/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# --- 新增：配置 SSH 服务、设置 Root 密码并添加到 Supervisor ---
+# --- 配置 SSH 服务、设置 Root 密码并添加到 Supervisor ---
 # 1. 创建 sshd 运行目录
 # 2. 设置 Root 密码为 'root'
 # 3. 允许 Root 登录
