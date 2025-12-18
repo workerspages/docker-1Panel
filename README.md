@@ -106,6 +106,9 @@ docker exec -it 1panel bash
 1panel update port
 1panel update username
 1panel update password
+
+# 取消安全入口
+1panel reset entrance
 ```
 
 #### docker-compose
