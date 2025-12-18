@@ -2,8 +2,8 @@ ARG VERSION_TYPE=pro
 FROM ubuntu:24.04
 
 LABEL maintainer="GeekWho <geekwho_eth@outlook.com>"
-LABEL version="1.1"
-LABEL description="A 1Panel Docker Image Base on Ubuntu 24.04 with latest Docker CLI, Tools, Rclone & SSH"
+LABEL version="1.2"
+LABEL description="A 1Panel Docker Image Base on Ubuntu 24.04 with latest Docker CLI, Rclone, SSH & Root access"
 
 # 设置非交互前端
 ARG DEBIAN_FRONTEND=noninteractive
@@ -75,18 +75,22 @@ RUN apt-get update -y && apt-get install -y supervisor && \
 # 复制 Supervisord 配置
 COPY hack/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# --- 新增：配置 SSH 服务并将其添加到 Supervisor ---
+# --- 新增：配置 SSH 服务、设置 Root 密码并添加到 Supervisor ---
 # 1. 创建 sshd 运行目录
-# 2. 允许 Root 登录 (可选，方便 1Panel 终端连接)
-# 3. 将 sshd 添加到 supervisord 配置文件中以自动启动
+# 2. 设置 Root 密码为 'root'
+# 3. 允许 Root 登录
+# 4. 修复 PAM 限制 (防止容器内 SSH 登录闪退)
+# 5. 将 sshd 添加到 supervisord 配置文件中以自动启动
 RUN mkdir -p /var/run/sshd && \
+    echo 'root:root' | chpasswd && \
     sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
+    sed -i 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' /etc/pam.d/sshd && \
     echo "\n[program:sshd]\ncommand=/usr/sbin/sshd -D\nautostart=true\nautorestart=true\n" >> /etc/supervisor/conf.d/supervisord.conf
 
 # 清理安装包
 RUN rm -rf 1panel-v*-linux-*.tar.gz 1panel-v*-linux-*/
 
-# 暴露端口 (SSH默认22，如果需要暴露给外部请确保映射端口)
+# 暴露端口 (SSH默认22)
 EXPOSE 80 443 22
 
 # 启动 Supervisord
