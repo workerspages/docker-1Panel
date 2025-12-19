@@ -9,5 +9,5 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /var/lib/docker/volumes:/var/lib/docker/volumes
-      - /data:/opt
-      - /rclone_config:/root/.config/rclone  # rclone 网盘配置文件
+      - ./1panel_data:/opt
+      - ./rclone_config:/root/.config/rclone  # rclone 网盘配置文件
