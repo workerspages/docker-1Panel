@@ -77,7 +77,7 @@
 
 #### docker run
 容器构建自动生成用户名、密码、端口，可启动后在容器内调整。这里假设面板默认端口为 8443。运行命令示例：
-- 使用 1panel update port 修改端 为 8443
+- 使用 `1panel update port` 命令修改端 为 8443
 
 ```bash
 docker run -d --name 1panel --restart unless-stopped \
