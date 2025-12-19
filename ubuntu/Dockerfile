@@ -91,7 +91,7 @@ RUN apt-get update -y && apt-get install -y supervisor && \
 # +++ 变更：直接复制已在 Action 中解压的目录 +++
 # ===================================================================
 # 这里的路径对应 Workflow 中解压的目标路径
-COPY ubuntu/1panel_data/ /opt/1panel/
+COPY ubuntu/1panel/ /opt/1panel/
 
 # 修正权限
 RUN chown -R root:root /opt/1panel
