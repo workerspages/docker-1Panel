@@ -111,24 +111,6 @@ jobs:
             HACK_DIR="hack"
           fi
           sed -i "s|{%OnePanel_Type%}|${HACK_DIR}|g" .docker-tmp/Dockerfile
-
-      # ========================================================
-      # +++ 新增步骤：在宿主机解压，避免 Docker Build 内存溢出 +++
-      # ========================================================
-      - name: Pre-unzip configuration (Avoid OOM)
-        run: |
-          # 1. [关键修复] 无论 zip 是否存在，先创建空目录
-          # 这样即使没有 zip，Docker COPY 指令也能找到目录，不会报错
-          mkdir -p "${{ matrix.os }}/1panel_data"
-
-          # 2. 检查对应 OS 目录下是否存在 1panel.zip
-          if [ -f "${{ matrix.os }}/1panel.zip" ]; then
-            echo "Found zip for ${{ matrix.os }}, unzipping..."
-            # 解压到刚才创建的目录
-            unzip -q -o "${{ matrix.os }}/1panel.zip" -d "${{ matrix.os }}/1panel_data/"
-          else
-            echo "No zip found for ${{ matrix.os }}, skipping."
-          fi
       
       - name: Build and Push (multi-arch)
         run: |
