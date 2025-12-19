@@ -111,6 +111,11 @@ docker exec -it 1panel bash
 # 取消安全入口
 1panel reset entrance
 
+# 初始用户 （登录后及时修改）
+用户名：admin
+密码：admin123
+端口：8443
+
 # 登录 SSH (1panel 内置终端登录ssh)
 用户名：root
 密码：root
