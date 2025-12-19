@@ -1,0 +1,19 @@
+[2025-12-19 22:02:11] [INFO] init logger successfully  
+[2025-12-19 22:02:11] [INFO] Migration run successfully  
+[2025-12-19 22:02:13] [ERROR] failed to synchronize system time with [pool.ntp.org], err: update system time failed, stdout: Fri Dec 19 22:02:12 CST 2025
+; stderr: date: cannot set date: Operation not permitted
+, err: exit status 1  
+[2025-12-19 22:02:13] [DEBUG] synchronize system time with [pool.ntp.org] successful!  
+[2025-12-19 22:02:14] [INFO] initializing firewall settings...  
+[2025-12-19 22:02:14] [INFO] [xpack] migration run successfully  
+[2025-12-19 22:02:15] [INFO] [AppStore] download file from https://apps-assets.fit2cloud.com/stable/1panel.json.zip  
+2025/12/19 22:02:16 [INFO] acme: Registering account for acme@1paneldev.com
+[2025-12-19 22:07:00] [INFO] init logger successfully  
+[2025-12-19 22:07:00] [INFO] Migration run successfully  
+[2025-12-19 22:07:01] [ERROR] failed to synchronize system time with [pool.ntp.org], err: update system time failed, stdout: Fri Dec 19 22:07:01 CST 2025
+; stderr: date: cannot set date: Operation not permitted
+, err: exit status 1  
+[2025-12-19 22:07:01] [DEBUG] synchronize system time with [pool.ntp.org] successful!  
+[2025-12-19 22:07:03] [INFO] [xpack] migration run successfully  
+[2025-12-19 22:07:03] [INFO] [AppStore] download file from https://apps-assets.fit2cloud.com/stable/1panel.json.zip  
+[2025-12-19 22:09:45] [ERROR] load firewall failed, err: No system firewall service detected (firewalld/ufw/iptables), please check and try again!  

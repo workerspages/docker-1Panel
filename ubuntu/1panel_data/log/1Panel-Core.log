@@ -1,0 +1,25 @@
+[2025-12-19 22:02:09] [INFO] init logger successfully  
+[2025-12-19 22:02:09] [INFO] Migration run successfully  
+[2025-12-19 22:02:09] [INFO] add job for script library sync successful  
+[2025-12-19 22:02:09] [INFO] init session successfully  
+[2025-12-19 22:02:09] [INFO] [xpack] migration run successfully  
+[2025-12-19 22:02:09] [INFO] [xpack] add health check cron job successful  
+[2025-12-19 22:02:09] [INFO] [xpack] add license check cron job successful, handle at 0:43  
+[2025-12-19 22:02:09] [INFO] add app store sync cron job successful  
+[2025-12-19 22:02:09] [INFO] [offline alert] cron job successful  
+[2025-12-19 22:02:09] [INFO] add master backup cron job successful  
+[2025-12-19 22:02:09] [ERROR] read secret file failed, err: open /opt/1panel/tmp/.secret: no such file or directory  
+[2025-12-19 22:02:10] [DEBUG] tar zxvf '/opt/1panel/tmp/script/scripts.tar.gz' -C '/opt/1panel/tmp/script'  
+[2025-12-19 22:02:12] [INFO] download geo ip successful  
+[2025-12-19 22:02:16] [INFO] listen at http://0.0.0.0:13917 [tcp4]  
+[2025-12-19 22:07:00] [INFO] init logger successfully  
+[2025-12-19 22:07:00] [INFO] Migration run successfully  
+[2025-12-19 22:07:00] [INFO] add job for script library sync successful  
+[2025-12-19 22:07:00] [INFO] init session successfully  
+[2025-12-19 22:07:00] [INFO] [xpack] migration run successfully  
+[2025-12-19 22:07:00] [INFO] [xpack] add health check cron job successful  
+[2025-12-19 22:07:00] [INFO] [xpack] add license check cron job successful, handle at 0:43  
+[2025-12-19 22:07:00] [INFO] add app store sync cron job successful  
+[2025-12-19 22:07:00] [INFO] [offline alert] cron job successful  
+[2025-12-19 22:07:00] [INFO] add master backup cron job successful  
+[2025-12-19 22:07:00] [INFO] listen at http://0.0.0.0:8443 [tcp4]  
