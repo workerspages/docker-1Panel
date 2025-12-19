@@ -32,6 +32,7 @@ RUN apt-get update -y && \
     vim \
     nano \
     cron \
+    unzip \
     lsof && \
     # --- 配置时区 ---
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
@@ -74,6 +75,17 @@ RUN bash /1panel/quick_start.sh v{%OnePanel_Version%}
 RUN apt-get update -y && apt-get install -y supervisor && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# ===================================================================
+# +++ 新增：注入初始配置 (Zip版) +++  用户名:admin 密码:admin123
+# ===================================================================
+# 1. 复制压缩包到临时目录
+RUN mkdir -p /opt/1panel && \
+    echo "正在解压 1panel 配置..." && \
+    unzip -o -q /tmp/1panel.zip -d /opt/1panel/ && \
+    echo "修正文件权限..." && \
+    chown -R root:root /opt/1panel && \
+    rm -f /tmp/1panel.zip
 
 # 复制 Supervisord 配置
 COPY hack/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
