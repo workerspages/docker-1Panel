@@ -80,12 +80,22 @@ RUN apt-get update -y && apt-get install -y supervisor && \
 # +++ 新增：注入初始配置 (Zip版) +++  用户名:admin 密码:admin123
 # ===================================================================
 # 1. 复制压缩包到临时目录
-RUN mkdir -p /opt/1panel && \
-    echo "正在解压 1panel 配置..." && \
-    unzip -o -q /tmp/1panel.zip -d /opt/1panel/ && \
-    echo "修正文件权限..." && \
-    chown -R root:root /opt/1panel && \
-    rm -f /tmp/1panel.zip
+# COPY ubuntu/1panel.zip /tmp/1panel.zip
+# RUN mkdir -p /opt/1panel && \
+#     echo "正在解压 1panel 配置..." && \
+#     unzip -q /tmp/1panel.zip -d /opt/1panel/ && \
+#     echo "修正文件权限..." && \
+#     chown -R root:root /opt/1panel
+
+# ===================================================================
+# +++ 变更：直接复制已在 Action 中解压的目录 +++
+# ===================================================================
+# 这里的路径对应 Workflow 中解压的目标路径
+COPY ubuntu/1panel_data/ /opt/1panel/
+
+# 修正权限
+RUN chown -R root:root /opt/1panel
+
 
 # 复制 Supervisord 配置
 COPY hack/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
