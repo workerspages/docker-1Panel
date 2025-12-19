@@ -80,11 +80,11 @@
 
 ```bash
 docker run -d --name 1panel --restart unless-stopped \
-  -p 8888:8888 \
+  -p 8443:8443 \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v /var/lib/docker/volumes:/var/lib/docker/volumes \
   -v /1panel_app/data/:/opt/ \
-  caijiamx/1panel:dood-2.0.15-ubuntu-cn
+  yesyunxin/1panel:dood-2.0.15-ubuntu-cn
 ```
 
 初始化（容器内）：
@@ -121,11 +121,12 @@ docker exec -it 1panel bash
 ```yaml
 services:
   one_panel:
-    image: caijiamx/1panel:dood-2.0.15-ubuntu-cn
+    image: yesyunxin/1panel:dood-2.0.15-ubuntu-cn
     container_name: 1panel
     restart: unless-stopped
     ports:
-      - "8888:8888"
+      # 使用 1panel update port 修改端 为 8443
+      - "8443:8443"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /var/lib/docker/volumes:/var/lib/docker/volumes
