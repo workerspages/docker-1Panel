@@ -10,3 +10,4 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - /var/lib/docker/volumes:/var/lib/docker/volumes
       - /1panel_app/data/:/opt/
+      - /rclone_config:/root/.config/rclone  # rclone 网盘配置文件
