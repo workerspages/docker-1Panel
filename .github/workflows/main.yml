@@ -112,6 +112,20 @@ jobs:
           fi
           sed -i "s|{%OnePanel_Type%}|${HACK_DIR}|g" .docker-tmp/Dockerfile
 
+      # ========================================================
+      # +++ 新增步骤：在宿主机解压，避免 Docker Build 内存溢出 +++
+      # ========================================================
+      - name: Pre-unzip configuration (Avoid OOM)
+        run: |
+          # 检查对应 OS 目录下是否存在 1panel.zip
+          if [ -f "${{ matrix.os }}/1panel.zip" ]; then
+            echo "Found zip for ${{ matrix.os }}, unzipping to ${{ matrix.os }}/1panel_data/ ..."
+            # 解压到 1panel_data 目录
+            unzip -q -o "${{ matrix.os }}/1panel.zip" -d "${{ matrix.os }}/1panel_data/"
+          else
+            echo "No zip found for ${{ matrix.os }}, skipping."
+          fi      
+      
       - name: Build and Push (multi-arch)
         run: |
           IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/1panel:dood-${{ matrix.version }}-${{ matrix.os }}${{ matrix.onepanel_type == 'cn' && '-cn' || '' }}
