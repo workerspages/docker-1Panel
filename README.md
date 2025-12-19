@@ -84,7 +84,7 @@ docker run -d --name 1panel --restart unless-stopped \
   -p 8443:8443 \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v /var/lib/docker/volumes:/var/lib/docker/volumes \
-  -v /1panel_app/data/:/opt/ \
+  -v /1panel_data/:/opt/ \
   yesyunxin/1panel:dood-2.0.15-ubuntu-cn
 ```
 
@@ -131,7 +131,8 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /var/lib/docker/volumes:/var/lib/docker/volumes
-      - /1panel_app/data/:/opt/
+      - ./1panel_data/:/opt/
+      - ./rclone_config:/root/.config/rclone  # rclone 网盘配置文件
 ```
 
 docker-compose.yml关键字段：
