@@ -1,37 +1,12 @@
 services:
   one_panel:
-    container_name: one_panel
-    image: caijiamx/1panel:dood-2.0.15-ubuntu
-    environment:
-      - TZ=Asia/Shanghai
+    image: yesyunxin/1panel:dood-2.0.15-ubuntu-cn
+    container_name: 1panel
+    restart: unless-stopped
     ports:
-      - "8443:8443" # expose port
+      # 使用 1panel update port 修改端 为 8443
+      - "8443:8443"
     volumes:
-      # make DooD work
       - /var/run/docker.sock:/var/run/docker.sock
       - /var/lib/docker/volumes:/var/lib/docker/volumes
-      - /panel_app/data/:/opt/
-    restart: unless-stopped # Setting the restart policy
-    # user: "1000:1000" # Specify the user running in the container
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "ps -ef | grep -q '/usr/bin/1panel-core' && ps -ef | grep -q '/usr/bin/1panel-agent'",
-        ]
-      interval: 10s
-      timeout: 3s
-      retries: 3
-    extra_hosts:
-      host.docker.internal: host-gateway # Use host.docker.internal to access host services from within the container
-    networks:
-      - 1panel-network
-    deploy:
-      resources:
-        limits:
-          cpus: "1.5" # Maximum number of cores used, absolute limit
-          memory: 1536m
-
-networks:
-  1panel-network:
-    external: true
+      - /1panel_app/data/:/opt/
