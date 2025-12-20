@@ -11,7 +11,7 @@ services:
       # (可选) SSH 端口，防止与宿主机 22 冲突，这里映射为 2222
       - "2222:22"
     environment:
-      # 设置 Alist 初始密码
+      # 设置 Alist 初始用户名：admin 密码：admin
       - ALIST_ADMIN_PASSWORD=admin
       # 确保时区正确
       - TZ=Asia/Shanghai
