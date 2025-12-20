@@ -1,5 +1,5 @@
 services:
-  one_panel:
+  one-panel:
     image: yesyunxin/1panel:dood-2.0.15-ubuntu-cn
     container_name: 1panel-docker
     restart: unless-stopped
