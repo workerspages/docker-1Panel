@@ -118,7 +118,7 @@ RUN mkdir -p /var/run/sshd && \
 RUN rm -rf 1panel-v*-linux-*.tar.gz 1panel-v*-linux-*/
 
 # 暴露端口 (SSH:22, HTTP:80/443, Alist:5244)
-EXPOSE 80 443 22 5244
+EXPOSE 80 443 22 5244 8443
 
 # 启动 Supervisord
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
