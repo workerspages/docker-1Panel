@@ -2,17 +2,16 @@ ARG VERSION_TYPE=pro
 FROM ubuntu:24.04
 
 LABEL maintainer="GeekWho <geekwho_eth@outlook.com>"
-LABEL version="1.4"
-LABEL description="A 1Panel Docker Image Base on Ubuntu 24.04 with latest Docker CLI, Rclone (Online Install), SSH & Root access"
+LABEL version="1.5"
+LABEL description="A 1Panel Docker Image Base on Ubuntu 24.04 with Alist, Docker CLI, Rclone, SSH & Root access"
 
-# 设置非交互前端
+# 设置非交互前端 (避免 apt-get 弹出选择框)
 ARG DEBIAN_FRONTEND=noninteractive
 
 # --- 设置时区为中国 (Asia/Shanghai) ---
 ENV TZ=Asia/Shanghai
 
-# 1. 安装基础依赖及用户指定工具
-# 注意：移除了本地 COPY 操作，确保安装了 curl 和 unzip 以便下载 rclone
+# 1. 安装基础依赖
 RUN apt-get update -y && \
     apt-get install -y \
     tzdata \
@@ -32,16 +31,29 @@ RUN apt-get update -y && \
     vim \
     nano \
     cron \
-    unzip \
-    lsof && \
+    lsof \
+    supervisor && \
     # --- 配置时区 ---
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# --- 修改：在线安装 Rclone (避免本地文件过大) ---
-# 使用官方或第三方脚本自动安装最新稳定版到 /usr/bin/rclone
+# --- 在线安装 Rclone ---
 RUN curl -fsSL https://raw.githubusercontent.com/wiserain/rclone/mod/install.sh | sudo bash 
+
+# ===================================================================
+# +++ 重点修改：手动安装 Alist (避开官方脚本的交互菜单) +++
+# ===================================================================
+# 1. 创建安装目录
+# 2. 从 GitHub 下载最新版二进制文件 (amd64)
+# 3. 解压并赋予执行权限
+# 4. 清理压缩包
+RUN mkdir -p /opt/alist && \
+    curl -fsSL "https://github.com/alist-org/alist/releases/latest/download/alist-linux-amd64.tar.gz" -o alist.tar.gz && \
+    tar -zxvf alist.tar.gz && \
+    mv alist /opt/alist/alist && \
+    chmod +x /opt/alist/alist && \
+    rm alist.tar.gz
 
 # 2. 安装 Docker 最新版 (CLI + 插件)
 RUN mkdir -p /etc/apt/keyrings && \
@@ -71,52 +83,35 @@ RUN chmod +x /1panel/fix_systemctl_start_cmd.sh
 # 5. 安装 1Panel
 RUN bash /1panel/quick_start.sh v{%OnePanel_Version%}
 
-# 6. 安装 Supervisord 用于进程管理
-RUN apt-get update -y && apt-get install -y supervisor && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
 # ===================================================================
-# +++ 新增：注入初始配置 (Zip版) +++  用户名:admin 密码:admin123
+# +++ 注入初始配置 +++
 # ===================================================================
-# 1. 复制压缩包到临时目录
-# COPY ubuntu/1panel.zip /tmp/1panel.zip
-# RUN mkdir -p /opt/1panel && \
-#     echo "正在解压 1panel 配置..." && \
-#     unzip -q /tmp/1panel.zip -d /opt/1panel/ && \
-#     echo "修正文件权限..." && \
-#     chown -R root:root /opt/1panel
-
-# ===================================================================
-# +++ 变更：直接复制已在 Action 中解压的目录 +++
-# ===================================================================
-# 这里的路径对应 Workflow 中解压的目标路径
 COPY ubuntu/1panel_data/ /opt/1panel/
-
-# 修正权限
 RUN chown -R root:root /opt/1panel
 
-
-# 复制 Supervisord 配置
+# 复制 Supervisord 配置 (如果本地有文件)
 COPY hack/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# --- 配置 SSH 服务、设置 Root 密码并添加到 Supervisor ---
+# --- 配置 SSH, Root 以及 Supervisord 启动项 ---
 # 1. 创建 sshd 运行目录
-# 2. 设置 Root 密码为 'root'
+# 2. 设置 Root 密码
 # 3. 允许 Root 登录
-# 4. 修复 PAM 限制 (防止容器内 SSH 登录闪退)
-# 5. 将 sshd 添加到 supervisord 配置文件中以自动启动
+# 4. 修复 PAM
+# 5. 配置 Supervisor 自动启动 SSHD 和 Alist
 RUN mkdir -p /var/run/sshd && \
     echo 'root:root' | chpasswd && \
     sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
     sed -i 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' /etc/pam.d/sshd && \
-    echo "\n[program:sshd]\ncommand=/usr/sbin/sshd -D\nautostart=true\nautorestart=true\n" >> /etc/supervisor/conf.d/supervisord.conf
+    # 写入 SSH 配置
+    echo "\n[program:sshd]\ncommand=/usr/sbin/sshd -D\nautostart=true\nautorestart=true\n" >> /etc/supervisor/conf.d/supervisord.conf && \
+    # 写入 Alist 配置 (关键：指定工作目录，否则数据会乱跑)
+    echo "\n[program:alist]\ncommand=/opt/alist/alist server\ndirectory=/opt/alist\nautostart=true\nautorestart=true\n" >> /etc/supervisor/conf.d/supervisord.conf
 
 # 清理安装包
 RUN rm -rf 1panel-v*-linux-*.tar.gz 1panel-v*-linux-*/
 
-# 暴露端口 (SSH默认22)
-EXPOSE 80 443 22
+# 暴露端口 (SSH:22, HTTP:80/443, Alist:5244)
+EXPOSE 80 443 22 5244
 
-# 启动 Supervisord
+# 启动 Supervisord (它会同时拉起 SSH 和 Alist)
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
