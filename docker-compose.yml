@@ -1,14 +1,33 @@
 services:
   one_panel:
     image: yesyunxin/1panel:dood-2.0.15-ubuntu-cn
-    container_name: 1panel
+    container_name: 1panel-docker
     restart: unless-stopped
     ports:
-      - "8443:8443"  # 使用 1panel update port 修改端 为 8443
-      - "5244:5244"  # Alist 服务端口
+      # 1Panel 默认容器内端口是 8443
+      - "8443:8443"
+      # Alist 端口
+      - "5244:5244"
+      # (可选) SSH 端口，防止与宿主机 22 冲突，这里映射为 2222
+      - "2222:22"
+    environment:
+      # 设置 Alist 初始密码
+      - ALIST_ADMIN_PASSWORD=admin
+      # 确保时区正确
+      - TZ=Asia/Shanghai
     volumes:
+      # --- Docker DooD 核心配置 ---
       - /var/run/docker.sock:/var/run/docker.sock
       - /var/lib/docker/volumes:/var/lib/docker/volumes
-      - ./1panel_data/:/opt/
-      - ./rclone_config:/root/.config/rclone  # rclone 网盘配置文件
-      - ./alist_data:/opt/alist/data          # Alist 数据
+      
+      # --- 1Panel 数据持久化 (必须精确到 /opt/1panel) ---
+      - ./1panel_data:/opt/1panel
+      
+      # --- Alist 数据持久化 ---
+      - ./alist_data:/opt/alist/data
+      
+      # --- Rclone 配置持久化 ---
+      - ./rclone_config:/root/.config/rclone
+      
+      # (可选) 如果你需要备份目录映射到宿主机
+      - ./backup:/opt/1panel/backup
