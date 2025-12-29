@@ -32,11 +32,13 @@ RUN apt-get update -y && \
     nano \
     cron \
     lsof \
-    pyTelegramBotAPI \
     python3 \
+    python3-pip \
     supervisor && \
     # --- 配置时区 ---
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
+    # 安装 Python 机器人库
+    pip3 install --break-system-packages pyTelegramBotAPI && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
