@@ -1,0 +1,58 @@
+name: Sync Specific Files from Upstream
+
+# 权限配置修改部分：添加了 workflows: write
+permissions:
+  contents: write
+  workflows: write
+
+on:
+  schedule:
+    # 每天北京时间上午 8:00 运行
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  sync_files:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout target repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+      - name: Sync files from upstream
+        run: |
+          UPSTREAM_REPO="https://github.com/geekwho-eth/docker-1Panel.git"
+          UPSTREAM_BRANCH="main"
+          
+          echo "Adding upstream remote..."
+          git remote add upstream $UPSTREAM_REPO
+          
+          echo "Fetching upstream..."
+          git fetch upstream
+          
+          echo "Checking out specific files..."
+          # 强制覆盖文件
+          git checkout upstream/$UPSTREAM_BRANCH -- .github/workflows/main.yml Makefile
+          
+          echo "Sync complete."
+
+      - name: Commit and Push changes
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "Changes detected. Committing..."
+            
+            git add .github/workflows/main.yml Makefile
+            git commit -m "chore: sync Makefile and main.yml from upstream"
+            
+            git push origin main
+            echo "Successfully pushed changes."
+          else
+            echo "No changes detected. Files are already up to date."
+          fi
