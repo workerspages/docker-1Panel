@@ -1,10 +1,5 @@
 name: Sync Specific Files from Upstream
 
-# 权限配置修改部分：添加了 workflows: write
-permissions:
-  contents: write
-  workflows: write
-
 on:
   schedule:
     # 每天北京时间上午 8:00 运行
@@ -19,7 +14,8 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          # 这里改用了如果你刚刚设置的 Secret，它拥有修改 workflow 文件的权限
+          token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Configure Git
         run: |
@@ -38,7 +34,7 @@ jobs:
           git fetch upstream
           
           echo "Checking out specific files..."
-          # 强制覆盖文件
+          # 强制拉取上游文件
           git checkout upstream/$UPSTREAM_BRANCH -- .github/workflows/main.yml Makefile
           
           echo "Sync complete."
@@ -51,6 +47,7 @@ jobs:
             git add .github/workflows/main.yml Makefile
             git commit -m "chore: sync Makefile and main.yml from upstream"
             
+            # 直接推送，因为 checkout 步骤已经配置了 token
             git push origin main
             echo "Successfully pushed changes."
           else
