@@ -1,7 +1,8 @@
 name: Sync （main.yml）（Makefile）  
 
 permissions:
-  contents: write
+  contents: write    # 允许修改普通代码文件 (Makefile)
+  workflows: write   # 允许修改工作流文件 (.github/workflows/main.yml)
 
 on:
   schedule:
