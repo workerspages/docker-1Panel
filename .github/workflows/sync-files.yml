@@ -1,4 +1,4 @@
-name: Sync Specific Files from Upstream
+name: 只同步上游 main.yml 和 Makefileg两文件
 
 on:
   schedule:
