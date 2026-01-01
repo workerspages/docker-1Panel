@@ -1,4 +1,4 @@
-name: Sync （main.yml）（Makefile）  
+name: sync-files-main-yml-Makefile.yml
 
 permissions:
   contents: write    # 允许修改普通代码文件 (Makefile)
