@@ -1,4 +1,4 @@
-name: Sync Specific Files from Upstream
+name: Syn-Files-from-Upstream
 
 # 权限配置修改部分：添加了 workflows: write
 permissions:
