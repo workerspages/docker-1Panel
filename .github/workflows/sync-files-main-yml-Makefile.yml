@@ -1,0 +1,60 @@
+name: Sync （main.yml）（Makefile）  
+
+permissions:
+  contents: write
+
+on:
+  schedule:
+    # 每天北京时间上午 8:00 运行 (UTC 0:00)
+    - cron: '0 0 * * *'
+  # 允许手动触发进行测试
+  workflow_dispatch:
+
+jobs:
+  sync_files:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout target repo
+        uses: actions/checkout@v4
+        with:
+          # 必须设置为 0 或 2 以上，以便能进行 git 操作
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+      - name: Sync files from upstream
+        run: |
+          # 1. 设置上游仓库地址 (请确认这是正确的上游地址)
+          UPSTREAM_REPO="https://github.com/geekwho-eth/docker-1Panel.git"
+          UPSTREAM_BRANCH="main"
+          
+          echo "Adding upstream remote..."
+          git remote add upstream $UPSTREAM_REPO
+          
+          echo "Fetching upstream..."
+          git fetch upstream
+          
+          echo "Checking out specific files..."
+          # 核心命令：这会强制用上游的文件覆盖本地文件
+          git checkout upstream/$UPSTREAM_BRANCH -- .github/workflows/main.yml Makefile
+          
+          echo "Sync complete."
+
+      - name: Commit and Push changes
+        run: |
+          # 检查是否有文件发生了变化
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "Changes detected. Committing..."
+            
+            git add .github/workflows/main.yml Makefile
+            git commit -m "chore: sync Makefile and main.yml from upstream"
+            
+            git push origin main
+            echo "Successfully pushed changes."
+          else
+            echo "No changes detected. Files are already up to date."
+          fi
