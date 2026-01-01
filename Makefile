@@ -1,8 +1,8 @@
 SHELL := /bin/bash
 
-# Defaults (override via: make build OS=ubuntu VERSION=2.0.15)
+# Defaults (override via: make build OS=ubuntu VERSION=2.0.16)
 OS ?= ubuntu
-VERSION ?= 2.0.15
+VERSION ?= 2.0.16
 PLATFORMS ?= linux/amd64,linux/arm64
 IMAGE_REPO ?= caijiamx/1panel
 IMAGE_TAG_PREFIX ?= dood
