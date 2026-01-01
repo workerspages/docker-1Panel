@@ -1,14 +1,14 @@
-name: sync-files-main-yml-Makefile
+name: Sync Specific Files from Upstream
 
+# 权限配置修改部分：添加了 workflows: write
 permissions:
-  contents: write    # 允许修改普通代码文件 (Makefile)
-  workflows: write   # 允许修改工作流文件 (.github/workflows/main.yml)
+  contents: write
+  workflows: write
 
 on:
   schedule:
-    # 每天北京时间上午 8:00 运行 (UTC 0:00)
+    # 每天北京时间上午 8:00 运行
     - cron: '0 0 * * *'
-  # 允许手动触发进行测试
   workflow_dispatch:
 
 jobs:
@@ -18,7 +18,6 @@ jobs:
       - name: Checkout target repo
         uses: actions/checkout@v4
         with:
-          # 必须设置为 0 或 2 以上，以便能进行 git 操作
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -29,7 +28,6 @@ jobs:
 
       - name: Sync files from upstream
         run: |
-          # 1. 设置上游仓库地址 (请确认这是正确的上游地址)
           UPSTREAM_REPO="https://github.com/geekwho-eth/docker-1Panel.git"
           UPSTREAM_BRANCH="main"
           
@@ -40,14 +38,13 @@ jobs:
           git fetch upstream
           
           echo "Checking out specific files..."
-          # 核心命令：这会强制用上游的文件覆盖本地文件
+          # 强制覆盖文件
           git checkout upstream/$UPSTREAM_BRANCH -- .github/workflows/main.yml Makefile
           
           echo "Sync complete."
 
       - name: Commit and Push changes
         run: |
-          # 检查是否有文件发生了变化
           if [ -n "$(git status --porcelain)" ]; then
             echo "Changes detected. Committing..."
             
